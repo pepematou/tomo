@@ -114,4 +114,8 @@
         <item quantity="one">%1$d update failed</item>
         <item quantity="other">%1$d updates failed</item>
     </plurals>
+    <plurals name="update_issues_count">
+        <item quantity="one">%1$d series needs your attention</item>
+        <item quantity="other">%1$d series need your attention</item>
+    </plurals>
 </resources>

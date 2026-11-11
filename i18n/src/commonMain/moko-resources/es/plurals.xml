@@ -115,4 +115,8 @@
         <item quantity="many">No se han podido actualizar %1$d elementos</item>
         <item quantity="other">No se han podido actualizar %1$d elementos</item>
     </plurals>
+    <plurals name="update_issues_count">
+        <item quantity="one">%1$d serie necesita tu atención</item>
+        <item quantity="other">%1$d series necesitan tu atención</item>
+    </plurals>
 </resources>

@@ -19,11 +19,16 @@ import androidx.work.WorkManager
 import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import dev.icerock.moko.resources.StringResource
 import dev.zacsweers.metro.Inject
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
@@ -35,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Semaphore
@@ -78,7 +84,45 @@ import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.incrementAndFetch
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
+
+/** Why [item] is left out of an update with the given manga [restrictions], or null to update it. */
+internal fun skipReason(
+    item: LibraryManga,
+    restrictions: Set<String>,
+    fetchWindowUpperBound: Instant,
+): StringResource? = when {
+    item.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && item.totalChapters > 0L ->
+        MR.strings.skipped_reason_not_always_update
+    MANGA_NON_COMPLETED in restrictions && item.manga.status.toInt() == SManga.COMPLETED ->
+        MR.strings.skipped_reason_completed
+    MANGA_HAS_UNREAD in restrictions && item.unreadCount != 0L ->
+        MR.strings.skipped_reason_not_caught_up
+    MANGA_NON_READ in restrictions && item.totalChapters > 0L && !item.hasStarted ->
+        MR.strings.skipped_reason_not_started
+    MANGA_OUTSIDE_RELEASE_PERIOD in restrictions &&
+        item.manga.nextUpdate.let { next -> next != null && next > fetchWindowUpperBound } ->
+        MR.strings.skipped_reason_not_in_release_period
+    else -> null
+}
+
+/** Runs [block], retrying after each of [delays] while the source answers 429 or a 5xx error. */
+internal suspend fun <T> retryWhenSourceBusy(
+    delays: List<Duration> = listOf(2.seconds, 4.seconds, 8.seconds),
+    block: suspend () -> T,
+): T {
+    for (wait in delays) {
+        try {
+            return block()
+        } catch (e: HttpException) {
+            if (e.code != 429 && e.code < 500) throw e
+        }
+        delay(wait)
+    }
+    return block()
+}
 
 @OptIn(ExperimentalAtomicApi::class)
 class LibraryUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
@@ -104,7 +148,15 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
 
     @Inject private lateinit var notifier: LibraryUpdateNotifier
 
+    @Inject private lateinit var updateIssues: LibraryUpdateIssues
+
+    @Inject private lateinit var extensionManager: ExtensionManager
+
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
+
+    private var checkedMangaIds: Set<Long> = emptySet()
+
+    private val skippedIssues = mutableListOf<LibraryUpdateIssues.Issue>()
 
     override suspend fun doWork(): Result {
         graph.inject(this)
@@ -133,6 +185,8 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
         return withContext(Dispatchers.IO) {
             try {
                 updateChapterList()
+                // Extensions otherwise only check for updates when the app is opened
+                if (tags.contains(WORK_NAME_AUTO)) extensionManager.checkForUpdates()
                 Result.success()
             } catch (e: Exception) {
                 if (e is CancellationException) {
@@ -168,8 +222,13 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
     private suspend fun addMangaToQueue(categoryId: Long) {
         val libraryManga = getLibraryManga.await()
 
+        // Manual updates check everything: the filters are only for background runs
+        val isAuto = tags.contains(WORK_NAME_AUTO)
+
         val listToUpdate = if (categoryId != -1L) {
             libraryManga.filter { categoryId in it.categories }
+        } else if (!isAuto) {
+            libraryManga
         } else {
             val includedCategories = libraryPreferences.updateCategories.get().map { it.toLong() }
             val excludedCategories = libraryPreferences.updateCategoriesExclude.get().map { it.toLong() }
@@ -181,7 +240,8 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
             }
         }
 
-        val restrictions = libraryPreferences.autoUpdateMangaRestrictions.get()
+        checkedMangaIds = listToUpdate.mapTo(mutableSetOf()) { it.id }
+        val restrictions = if (isAuto) libraryPreferences.autoUpdateMangaRestrictions.get() else emptySet()
         val skippedUpdates = mutableListOf<Pair<Manga, String?>>()
         val timeZone = TimeZone.currentSystemDefault()
         val fetchWindowUpperBound = fetchInterval.getWindow(
@@ -191,46 +251,21 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
 
         mangaToUpdate = listToUpdate
             .filter {
-                when {
-                    it.manga.updateStrategy == UpdateStrategy.ONLY_FETCH_ONCE && it.totalChapters > 0L -> {
-                        skippedUpdates.add(
-                            it.manga to context.stringResource(MR.strings.skipped_reason_not_always_update),
-                        )
-                        false
-                    }
-
-                    MANGA_NON_COMPLETED in restrictions && it.manga.status.toInt() == SManga.COMPLETED -> {
-                        skippedUpdates.add(it.manga to context.stringResource(MR.strings.skipped_reason_completed))
-                        false
-                    }
-
-                    MANGA_HAS_UNREAD in restrictions && it.unreadCount != 0L -> {
-                        skippedUpdates.add(it.manga to context.stringResource(MR.strings.skipped_reason_not_caught_up))
-                        false
-                    }
-
-                    MANGA_NON_READ in restrictions && it.totalChapters > 0L && !it.hasStarted -> {
-                        skippedUpdates.add(it.manga to context.stringResource(MR.strings.skipped_reason_not_started))
-                        false
-                    }
-
-                    MANGA_OUTSIDE_RELEASE_PERIOD in restrictions &&
-                        it.manga.nextUpdate.let { next -> next != null && next > fetchWindowUpperBound } -> {
-                        skippedUpdates.add(
-                            it.manga to context.stringResource(MR.strings.skipped_reason_not_in_release_period),
-                        )
-                        false
-                    }
-
-                    else -> true
+                val reason = skipReason(it, restrictions, fetchWindowUpperBound)
+                if (reason != null) {
+                    val text = context.stringResource(reason)
+                    skippedUpdates.add(it.manga to text)
+                    skippedIssues.add(
+                        LibraryUpdateIssues.Issue(it.id, it.manga.title, LibraryUpdateIssues.Kind.SKIPPED, text),
+                    )
                 }
+                reason == null
             }
             .sortedBy { it.manga.title }
 
         notifier.showQueueSizeWarningNotificationIfNeeded(mangaToUpdate)
 
         if (skippedUpdates.isNotEmpty()) {
-            // TODO: surface skipped reasons to user?
             logcat {
                 skippedUpdates
                     .groupBy { it.second }
@@ -254,6 +289,7 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
         val currentlyUpdatingManga = CopyOnWriteArrayList<Manga>()
         val newUpdates = CopyOnWriteArrayList<Pair<Manga, Array<Chapter>>>()
         val failedUpdates = CopyOnWriteArrayList<Pair<Manga, String?>>()
+        val failedIssues = CopyOnWriteArrayList<LibraryUpdateIssues.Issue>()
         val hasDownloads = AtomicBoolean(false)
         val timeZone = TimeZone.currentSystemDefault()
         val fetchWindow = fetchInterval.getWindow(Clock.System.now().toLocalDateTime(timeZone).date, timeZone)
@@ -279,7 +315,7 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
                                     manga,
                                 ) {
                                     try {
-                                        val newChapters = updateManga(manga, fetchWindow)
+                                        val newChapters = retryWhenSourceBusy { updateManga(manga, fetchWindow) }
                                             .sortedByDescending { it.sourceOrder }
 
                                         if (newChapters.isNotEmpty()) {
@@ -310,6 +346,7 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
                                             else -> e.message
                                         }
                                         failedUpdates.add(manga to errorMessage)
+                                        failedIssues.add(failedIssue(manga, e, errorMessage))
                                     }
                                 }
                             }
@@ -320,6 +357,8 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
         }
 
         notifier.cancelProgressNotification()
+
+        updateIssues.replace(checkedMangaIds, skippedIssues + failedIssues)
 
         if (newUpdates.isNotEmpty()) {
             notifier.showUpdateNotifications(newUpdates)
@@ -335,6 +374,28 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
                 errorFile.getUriCompat(context),
             )
         }
+    }
+
+    private suspend fun failedIssue(manga: Manga, error: Throwable, message: String?): LibraryUpdateIssues.Issue {
+        val source = sourceManager.get(manga.source)
+        val isCloudflare = message == context.stringResource(MR.strings.information_cloudflare_bypass_failure)
+        val url = if (isCloudflare) {
+            try {
+                (source as? HttpSource)?.getMangaUrl(manga.toSManga())
+            } catch (_: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+        return LibraryUpdateIssues.Issue(
+            mangaId = manga.id,
+            title = manga.title,
+            kind = LibraryUpdateIssues.Kind.ERROR,
+            reason = message ?: error::class.simpleName.orEmpty(),
+            webViewUrl = url,
+            sourceId = manga.source,
+        )
     }
 
     private suspend fun downloadChapters(manga: Manga, chapters: List<Chapter>) {

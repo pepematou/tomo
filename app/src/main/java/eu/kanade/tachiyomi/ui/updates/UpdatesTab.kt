@@ -15,6 +15,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import eu.kanade.presentation.updates.UpdateIssuesDialog
 import eu.kanade.presentation.updates.UpdateScreen
 import eu.kanade.presentation.updates.UpdatesDeleteConfirmationDialog
 import eu.kanade.presentation.updates.UpdatesFilterDialog
@@ -26,6 +27,7 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.updates.UpdatesViewModel.Event
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import kotlinx.coroutines.flow.collectLatest
 import mihon.feature.upcoming.UpcomingScreen
 import tachiyomi.core.common.i18n.stringResource
@@ -57,6 +59,7 @@ data object UpdatesTab : Tab {
         val viewModel = metroViewModel<UpdatesViewModel>()
         val settingsViewModel = metroViewModel<UpdatesSettingsViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
+        val updateIssues by viewModel.updateIssues.collectAsStateWithLifecycle()
 
         UpdateScreen(
             state = state,
@@ -78,6 +81,8 @@ data object UpdatesTab : Tab {
             onCalendarClicked = { navigator.push(UpcomingScreen()) },
             onFilterClicked = viewModel::showFilterDialog,
             hasActiveFilters = state.hasActiveFilters,
+            updateIssueCount = updateIssues.size,
+            onClickUpdateIssues = { viewModel.setDialog(UpdatesViewModel.Dialog.UpdateIssues) },
         )
 
         val onDismissDialog = { viewModel.setDialog(null) }
@@ -92,6 +97,21 @@ data object UpdatesTab : Tab {
                 UpdatesFilterDialog(
                     onDismissRequest = onDismissDialog,
                     viewModel = settingsViewModel,
+                )
+            }
+            UpdatesViewModel.Dialog.UpdateIssues -> {
+                UpdateIssuesDialog(
+                    issues = updateIssues,
+                    onDismissRequest = onDismissDialog,
+                    onOpenManga = {
+                        onDismissDialog()
+                        navigator.push(MangaScreen(it.mangaId))
+                    },
+                    onOpenWebView = { issue ->
+                        issue.webViewUrl?.let { url ->
+                            context.startActivity(WebViewActivity.newIntent(context, url, issue.sourceId, issue.title))
+                        }
+                    },
                 )
             }
             null -> {}

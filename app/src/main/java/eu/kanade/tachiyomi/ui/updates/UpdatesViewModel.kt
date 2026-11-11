@@ -22,6 +22,7 @@ import eu.kanade.presentation.updates.UpdatesUiModel
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
 import eu.kanade.tachiyomi.data.library.LibraryUpdateWorker
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.workManager
@@ -81,7 +82,10 @@ class UpdatesViewModel(
     private val getChapter: GetChapter,
     private val libraryPreferences: LibraryPreferences,
     private val updatesPreferences: UpdatesPreferences,
+    libraryUpdateIssues: LibraryUpdateIssues,
 ) : ViewModel() {
+
+    val updateIssues = libraryUpdateIssues.issues
 
     private val subscriberGate = SubscriberGate()
 
@@ -523,6 +527,7 @@ class UpdatesViewModel(
     sealed interface Dialog {
         data class DeleteConfirmation(val toDelete: List<UpdatesItem>) : Dialog
         data object FilterSheet : Dialog
+        data object UpdateIssues : Dialog
     }
 
     sealed interface Event {

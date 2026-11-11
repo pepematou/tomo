@@ -63,6 +63,8 @@ fun UpdateScreen(
     onOpenChapter: (UpdatesItem) -> Unit,
     onFilterClicked: () -> Unit,
     hasActiveFilters: Boolean,
+    updateIssueCount: Int,
+    onClickUpdateIssues: () -> Unit,
 ) {
     BackHandler(enabled = state.selectionMode) {
         onSelectAll(false)
@@ -121,6 +123,9 @@ fun UpdateScreen(
                                 .fillMaxSize(),
                         ) {
                             UpdatesLastUpdatedHeader(lastUpdated = lastUpdated)
+                            if (updateIssueCount > 0) {
+                                UpdateIssuesBanner(count = updateIssueCount, onClick = onClickUpdateIssues)
+                            }
                             EmptyScreen(
                                 stringRes = if (hasActiveFilters) {
                                     MR.strings.error_no_match
@@ -135,6 +140,12 @@ fun UpdateScreen(
                             contentPadding = contentPadding,
                         ) {
                             updatesLastUpdatedItem(lastUpdated)
+
+                            if (updateIssueCount > 0) {
+                                item(key = "updates-issues") {
+                                    UpdateIssuesBanner(count = updateIssueCount, onClick = onClickUpdateIssues)
+                                }
+                            }
 
                             updatesUiItems(
                                 uiModels = state.getUiModel(),

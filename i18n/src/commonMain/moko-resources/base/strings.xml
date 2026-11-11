@@ -968,6 +968,7 @@
     <string name="skipped_reason_not_started">Skipped because no chapters are read</string>
     <string name="skipped_reason_not_always_update">Skipped because series does not require updates</string>
     <string name="skipped_reason_not_in_release_period">Skipped because no release was expected today</string>
+    <string name="update_issues_title">Need your attention</string>
 
     <!-- File Picker Titles -->
     <string name="file_picker_error">No file picker app found</string>
