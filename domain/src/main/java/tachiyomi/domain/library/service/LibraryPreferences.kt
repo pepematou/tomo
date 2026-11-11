@@ -41,22 +41,15 @@ class LibraryPreferences(
         Preference.appStateKey("library_update_last_timestamp"),
         0L,
     )
-    val autoUpdateInterval: Preference<Int> = preferenceStore.getInt("pref_library_update_interval_key", 0)
+    val autoUpdateInterval: Preference<Int> = preferenceStore.getInt("pref_library_update_interval_key", 12)
 
     val autoUpdateDeviceRestrictions: Preference<Set<String>> = preferenceStore.getStringSet(
         "library_update_restriction",
-        setOf(
-            DEVICE_ONLY_ON_WIFI,
-        ),
+        emptySet(),
     )
     val autoUpdateMangaRestrictions: Preference<Set<String>> = preferenceStore.getStringSet(
         "library_update_manga_restriction",
-        setOf(
-            MANGA_HAS_UNREAD,
-            MANGA_NON_COMPLETED,
-            MANGA_NON_READ,
-            MANGA_OUTSIDE_RELEASE_PERIOD,
-        ),
+        emptySet(),
     )
 
     val autoUpdateMetadata: Preference<Boolean> = preferenceStore.getBoolean("auto_update_metadata", false)
