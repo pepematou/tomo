@@ -35,10 +35,10 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.mihon"
+        applicationId = "app.tomo"
 
-        versionCode = 39
-        versionName = "0.21.3"
+        versionCode = 1
+        versionName = "0.1.0"
 
         buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
         buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
