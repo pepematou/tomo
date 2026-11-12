@@ -87,3 +87,15 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `ui/reader/ReaderViewModel.kt` | Guarda el número de páginas del capítulo para "página 36 de 52" en Inicio |
 | `presentation/updates/UpdatesUiItem.kt` | Etiqueta "Fanfic" en los capítulos nuevos de AO3 |
 | `domain/ui/UiPreferences.kt` | Descubrir recuerda si estaba en Manga o en Fanfics |
+
+## FanFiction.net, descargas y fuentes caídas (v0.16)
+
+| Archivo | Por qué |
+| --- | --- |
+| `source/AndroidSourceManager.kt` | Registra también `FfnSource` |
+| `domain/source/interactor/GetEnabledSources.kt` | Ninguna fuente de fanfics aparece entre las de manga |
+| `presentation/updates/UpdatesUiItem.kt` | La etiqueta "Fanfic" vale para AO3 y FanFiction.net |
+| `data/library/LibraryUpdateWorker.kt` | Al terminar, pone en cola la descarga de capítulos nuevos de fanfics (RF-30h) |
+| `ui/main/MainActivity.kt` | Un enlace compartido de AO3 o FanFiction.net abre la ficha del fanfic |
+| `domain/ui/UiPreferences.kt` | Descubrir → Fanfics recuerda la última fuente |
+| `mihon/app/di/AppGraph.kt` | Expone `FanficDownloader` y `TextCache` |

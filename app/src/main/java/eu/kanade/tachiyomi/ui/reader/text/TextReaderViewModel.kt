@@ -13,10 +13,14 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import eu.kanade.domain.chapter.model.toSChapter
 import eu.kanade.tachiyomi.tomo.ChapterLengths
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
 import eu.kanade.tachiyomi.tomo.text.TextBlock
+import eu.kanade.tachiyomi.tomo.text.TextCache
+import eu.kanade.tachiyomi.tomo.text.TextSource
+import eu.kanade.tachiyomi.tomo.text.classifyFailure
+import eu.kanade.tachiyomi.tomo.text.message
 import eu.kanade.tachiyomi.tomo.text.parseBlocks
 import eu.kanade.tachiyomi.tomo.text.readEpubBlocks
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -29,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import mihon.core.archive.epubReader
+import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.interactor.UpdateChapter
@@ -40,7 +45,6 @@ import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.io.Format
-import java.io.File
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
@@ -59,6 +63,7 @@ class TextReaderViewModel(
     private val updateChapter: UpdateChapter,
     private val upsertHistory: UpsertHistory,
     private val chapterLengths: ChapterLengths,
+    private val textCache: TextCache,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -106,7 +111,7 @@ class TextReaderViewModel(
                 val format = source.getFormat(chapter.toSChapter()) as? Format.Epub ?: error("Not an EPUB")
                 format.file.epubReader(context).use(::readEpubBlocks)
             }
-            is Ao3Source -> parseBlocks(ao3Html(source, chapter))
+            is TextSource -> parseBlocks(onlineHtml(source, chapter))
             else -> error("Not a text source")
         }
         chapterLengths.put(chapter.id, blocks.size)
@@ -129,14 +134,16 @@ class TextReaderViewModel(
         )
     }
 
-    /** AO3 chapters are fetched once and kept, so they can be read again without connection. */
-    private suspend fun ao3Html(source: Ao3Source, chapter: Chapter): String {
-        val cached = File(context.filesDir, "text_cache/${chapter.id}.html")
-        if (cached.exists()) return cached.readText()
-        val html = source.getChapterHtml(chapter.url)
-        cached.parentFile?.mkdirs()
-        cached.writeText(html)
-        return html
+    /** Fanfic chapters are fetched once and kept, so they read again without connection (RF-30h). */
+    private suspend fun onlineHtml(source: TextSource, chapter: Chapter): String {
+        textCache.read(chapter.id)?.let { return it }
+        return try {
+            source.getChapterHtml(chapter.url).also { textCache.write(chapter.id, it) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            throw Exception(context.stringResource(classifyFailure(e).message(), source.name), e)
+        }
     }
 
     /** Saves the first visible block a moment after the user stops scrolling; the end marks the chapter read. */

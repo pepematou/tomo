@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +43,9 @@ import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.text.TEXT_SOURCE_IDS
+import eu.kanade.tachiyomi.tomo.text.TextSource
+import eu.kanade.tachiyomi.tomo.text.TextSourceHealth
 import eu.kanade.tachiyomi.ui.browse.migration.TomoWhereToSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -120,25 +123,30 @@ class MangaScreen(
         }
         // Tomo: fanfics and other text works get their own ficha (RF-30)
         val isTextWork = remember(successState.manga.id) {
-            successState.source.id == Ao3Source.ID || context.appGraph.textWorks.isText(successState.manga.id)
+            successState.source.id in TEXT_SOURCE_IDS || context.appGraph.textWorks.isText(successState.manga.id)
         }
         if (glass && isTextWork) {
             val followFanfic = remember { context.appGraph.followFanfic }
+            val textSource = successState.source as? TextSource
+            val textCache = remember { context.appGraph.textCache }
+            val saved by textCache.saved.collectAsState()
+            val downloaded = remember(successState.chapters, saved) {
+                successState.chapters.count { textCache.has(it.chapter.id) }
+            }
+            val problems by TextSourceHealth.problems.collectAsState()
             TomoFanficContent(
                 manga = successState.manga,
                 chapters = successState.chapters.map { it.chapter }.sortedBy { it.chapterNumber },
                 nextChapter = viewModel.getNextUnreadChapter(),
-                isAo3 = successState.source.id == Ao3Source.ID,
+                sourceName = textSource?.name,
+                downloaded = downloaded,
+                problem = remember(problems, textSource) { textSource?.let(TextSourceHealth::problemOf) },
                 onBack = navigator::pop,
                 onOpenWeb = {
-                    context.startActivity(
-                        WebViewActivity.newIntent(
-                            context,
-                            Ao3Source.webUrl(successState.manga.url),
-                            Ao3Source.ID,
-                            successState.manga.title,
-                        ),
-                    )
+                    textSource?.let {
+                        val url = it.webUrl(successState.manga.url)
+                        context.startActivity(WebViewActivity.newIntent(context, url, it.id, successState.manga.title))
+                    }
                 },
                 onRefresh = viewModel::fetchAllFromSource,
                 onRead = { continueReading(context, viewModel.getNextUnreadChapter()) },

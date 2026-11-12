@@ -29,6 +29,7 @@ class FollowFanfic(
     private val setMangaCategories: SetMangaCategories,
     private val coverCache: CoverCache,
     private val textWorks: TextWorks,
+    private val fanficDownloader: FanficDownloader,
 ) {
     /** Follows a work from search results, which isn't in the database yet; returns the series id. */
     suspend fun follow(work: SManga, sourceId: Long): Long {
@@ -42,14 +43,18 @@ class FollowFanfic(
         ensureCover(manga)
         updateManga.awaitUpdateFavorite(manga.id, true)
         setMangaCategories.await(manga.id, listOf(fanficsCategoryId()))
+        fanficDownloader.enqueue()
     }
 
-    /** The series of an AO3 work in the database (without following it), so its ficha can open; returns its id. */
-    suspend fun openAo3Work(workId: Long): Long {
+    /** The series of a fanfic site's work in the database (without following it), so its ficha can open. */
+    suspend fun openWork(sourceId: Long, url: String): Long {
         val manga = networkToLocalManga(
-            Manga.create().copy(url = Ao3Source.workUrl(workId), title = "AO3 $workId", source = Ao3Source.ID),
+            Manga.create().copy(url = url, title = url.substringAfterLast('/'), source = sourceId),
         )
-        if (!textWorks.isText(manga.id)) textWorks.add(manga.id, TextWorks.TextWork(ao3WorkId = workId))
+        if (!textWorks.isText(manga.id)) {
+            val ao3WorkId = if (sourceId == Ao3Source.ID) url.substringAfterLast('/').toLongOrNull() else null
+            textWorks.add(manga.id, TextWorks.TextWork(ao3WorkId = ao3WorkId))
+        }
         return manga.id
     }
 

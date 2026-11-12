@@ -52,8 +52,10 @@ import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.tomo.tomoContentWidth
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.presentation.util.relativeTimeSpanString
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Meta
+import eu.kanade.tachiyomi.tomo.text.FanficMeta
+import eu.kanade.tachiyomi.tomo.text.SourceUnavailableException
 import eu.kanade.tachiyomi.tomo.text.coverHue
+import eu.kanade.tachiyomi.tomo.text.message
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.automirroredrounded.ArrowBack
 import mihon.icons.materialsymbols.rounded.Public
@@ -69,7 +71,11 @@ fun TomoFanficContent(
     manga: Manga,
     chapters: List<Chapter>,
     nextChapter: Chapter?,
-    isAo3: Boolean,
+    /** The fanfic site, null for a local file. */
+    sourceName: String?,
+    downloaded: Int,
+    /** Why the site did not answer last time, null while it works. */
+    problem: SourceUnavailableException.Reason?,
     onBack: () -> Unit,
     onOpenWeb: () -> Unit,
     onRefresh: () -> Unit,
@@ -77,7 +83,7 @@ fun TomoFanficContent(
     onToggleFollow: () -> Unit,
     onChapterClick: (Chapter) -> Unit,
 ) {
-    val meta = Ao3Meta.fromMemo(manga.memo)
+    val meta = FanficMeta.fromMemo(manga.memo)
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 24.dp
     val hue = coverHue(manga.title)
 
@@ -100,10 +106,10 @@ fun TomoFanficContent(
                         onBack,
                     )
                     Spacer(Modifier.weight(1f))
-                    if (isAo3) {
+                    if (sourceName != null) {
                         GlassIconButton(
                             MaterialSymbols.Rounded.Public,
-                            stringResource(MR.strings.tomo_open_in_ao3),
+                            stringResource(MR.strings.tomo_open_in_source, sourceName),
                             onOpenWeb,
                         )
                     }
@@ -123,9 +129,8 @@ fun TomoFanficContent(
                     FanficBook(manga.title, manga.author, hue)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(
-                                if (isAo3) MR.strings.tomo_fanfic_badge_ao3 else MR.strings.tomo_type_text,
-                            ),
+                            text = sourceName?.let { stringResource(MR.strings.tomo_fanfic_badge_source, it) }
+                                ?: stringResource(MR.strings.tomo_type_text),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = Tomo.mint,
@@ -206,6 +211,27 @@ fun TomoFanficContent(
                             )
                         }
                         FollowButton(followed = manga.favorite, onClick = onToggleFollow, height = 50)
+                    }
+                    if (problem != null && sourceName != null) {
+                        val why = stringResource(problem.message(), sourceName)
+                        Text(
+                            text = if (downloaded >
+                                0
+                            ) {
+                                stringResource(MR.strings.tomo_fanfic_reading_copy, why)
+                            } else {
+                                why
+                            },
+                            fontSize = 12.sp,
+                            color = Tomo.amber,
+                        )
+                    }
+                    if (sourceName != null && manga.favorite && chapters.isNotEmpty()) {
+                        Text(
+                            text = stringResource(MR.strings.tomo_fanfic_downloaded, downloaded, chapters.size),
+                            fontSize = 12.sp,
+                            color = if (downloaded >= chapters.size) Tomo.mint else Tomo.textSecondary,
+                        )
                     }
                     Text(
                         text = stringResource(
@@ -379,7 +405,7 @@ private fun androidx.compose.foundation.layout.RowScope.StatBox(value: String, l
 }
 
 @Composable
-private fun TagsPanel(meta: Ao3Meta?, tags: List<String>) {
+private fun TagsPanel(meta: FanficMeta?, tags: List<String>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier

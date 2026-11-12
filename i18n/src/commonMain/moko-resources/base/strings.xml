@@ -1325,4 +1325,19 @@
     <string name="tomo_text_font">Typeface</string>
     <string name="tomo_chapter_page_of">Ch. %1$s · page %2$d of %3$d</string>
     <string name="tomo_chapter_paragraph_of">Ch. %1$s · paragraph %2$d of %3$d</string>
+    <string name="tomo_fanfic_badge_source">Spanish · %1$s</string>
+    <string name="tomo_open_in_source">Open in %1$s</string>
+    <string name="tomo_source_offline">No connection</string>
+    <string name="tomo_source_down">%1$s is down or under maintenance</string>
+    <string name="tomo_source_verification">%1$s asks for a check</string>
+    <string name="tomo_source_restricted">Only for registered %1$s users</string>
+    <string name="tomo_source_unknown">%1$s is not responding</string>
+    <string name="tomo_source_verify">Verify in the browser</string>
+    <string name="tomo_search_in">Search on %1$s</string>
+    <string name="tomo_fanfic_downloaded_title">Your downloaded fanfics</string>
+    <string name="tomo_fanfic_downloaded">Downloaded · %1$d of %2$d ch.</string>
+    <string name="tomo_fanfic_reading_copy">%1$s · reading the downloaded copy</string>
+    <string name="tomo_fanfic_sort_favorites">Most favorites</string>
+    <string name="tomo_fanfic_sort_reviews">Most reviews</string>
+    <string name="tomo_fanfic_no_mature">No mature content</string>
 </resources>

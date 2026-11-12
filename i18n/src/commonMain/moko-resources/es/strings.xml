@@ -1123,4 +1123,19 @@
     <string name="tomo_text_font">Letra</string>
     <string name="tomo_chapter_page_of">Cap. %1$s · página %2$d de %3$d</string>
     <string name="tomo_chapter_paragraph_of">Cap. %1$s · párrafo %2$d de %3$d</string>
+    <string name="tomo_fanfic_badge_source">Español · %1$s</string>
+    <string name="tomo_open_in_source">Abrir en %1$s</string>
+    <string name="tomo_source_offline">Sin conexión</string>
+    <string name="tomo_source_down">%1$s está en mantenimiento o caído</string>
+    <string name="tomo_source_verification">%1$s pide una verificación</string>
+    <string name="tomo_source_restricted">Solo para usuarios registrados de %1$s</string>
+    <string name="tomo_source_unknown">%1$s no responde</string>
+    <string name="tomo_source_verify">Verificar en el navegador</string>
+    <string name="tomo_search_in">Buscar en %1$s</string>
+    <string name="tomo_fanfic_downloaded_title">Tus fanfics descargados</string>
+    <string name="tomo_fanfic_downloaded">Descargado · %1$d de %2$d cap.</string>
+    <string name="tomo_fanfic_reading_copy">%1$s · lees la copia descargada</string>
+    <string name="tomo_fanfic_sort_favorites">Más favoritos</string>
+    <string name="tomo_fanfic_sort_reviews">Más reseñas</string>
+    <string name="tomo_fanfic_no_mature">Sin contenido adulto</string>
 </resources>

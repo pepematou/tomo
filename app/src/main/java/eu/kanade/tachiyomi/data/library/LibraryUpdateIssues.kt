@@ -4,6 +4,7 @@ import android.content.Context
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import eu.kanade.tachiyomi.tomo.text.TEXT_SOURCE_IDS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -81,11 +82,17 @@ class LibraryUpdateIssues(
     enum class Action { NONE, INSTALL_EXTENSION, MIGRATE, WEBVIEW }
 }
 
-/** Series the last update could not reach because their extension is missing or their site is gone. */
+/**
+ * Series the last update could not reach because their extension is missing or their site is gone. Fanfics are left
+ * out: migrating them to a manga source makes no sense, and the fanfic screens explain the outage instead (RF-30i).
+ */
 fun List<LibraryUpdateIssues.Issue>.sourceDownIds(): Set<Long> =
     filter {
-        it.action == LibraryUpdateIssues.Action.MIGRATE ||
-            it.action == LibraryUpdateIssues.Action.INSTALL_EXTENSION
+        it.sourceId !in TEXT_SOURCE_IDS &&
+            (
+                it.action == LibraryUpdateIssues.Action.MIGRATE ||
+                    it.action == LibraryUpdateIssues.Action.INSTALL_EXTENSION
+                )
     }
         .mapTo(mutableSetOf()) { it.mangaId }
 

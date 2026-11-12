@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.library
 
+import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import tachiyomi.core.common.preference.TriState
@@ -25,6 +26,12 @@ class SourceDownIdsTest {
     @Test
     fun `only missing extensions and dead sites count as source down`() {
         issues.sourceDownIds() shouldBe setOf(1L, 2L)
+    }
+
+    @Test
+    fun `fanfics whose site is down are not offered for migration`() {
+        val fanfic = issue(5, LibraryUpdateIssues.Action.MIGRATE).copy(sourceId = Ao3Source.ID)
+        (issues + fanfic).sourceDownIds() shouldBe setOf(1L, 2L)
     }
 
     @Test

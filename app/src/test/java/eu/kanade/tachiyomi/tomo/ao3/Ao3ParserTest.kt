@@ -1,5 +1,7 @@
 package eu.kanade.tachiyomi.tomo.ao3
 
+import eu.kanade.tachiyomi.tomo.text.FanficMeta
+import eu.kanade.tachiyomi.tomo.text.FanficSearch
 import eu.kanade.tachiyomi.tomo.text.TextBlock
 import eu.kanade.tachiyomi.tomo.text.parseBlocks
 import io.kotest.matchers.collections.shouldContainAll
@@ -93,7 +95,7 @@ class Ao3ParserTest {
         work.meta.complete shouldBe true
         work.meta.rating shouldBe "General Audiences"
         work.meta.relationships shouldBe listOf("A/B")
-        Ao3Meta.fromMemo(work.meta.toMemo()) shouldBe work.meta
+        FanficMeta.fromMemo(work.meta.toMemo()) shouldBe work.meta
     }
 
     @Test
@@ -139,13 +141,14 @@ class Ao3ParserTest {
 
     @Test
     fun `every search is limited to Spanish`() {
-        val url = searchUrl(Ao3Search(query = "Elena", complete = true, maxWords = 10000, noWarnings = true), page = 2)
+        val url =
+            searchUrl(FanficSearch(query = "Elena", complete = true, maxWords = 10000, noWarnings = true), page = 2)
         url.queryParameter("work_search[language_id]") shouldBe "es"
         url.queryParameter("work_search[complete]") shouldBe "T"
         url.queryParameter("work_search[words_to]") shouldBe "10000"
         url.queryParameter("page") shouldBe "2"
         url.queryParameterValues("work_search[archive_warning_ids][]") shouldContainAll listOf("16")
-        searchUrl(Ao3Search(), 1).toString() shouldContain "language_id%5D=es"
+        searchUrl(FanficSearch(), 1).toString() shouldContain "language_id%5D=es"
     }
 
     @Test

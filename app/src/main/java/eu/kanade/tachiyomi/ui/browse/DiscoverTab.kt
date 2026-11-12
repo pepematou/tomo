@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsViewModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import kotlinx.coroutines.launch
 import mihon.app.di.appGraph
 import tachiyomi.presentation.core.util.collectAsState
@@ -44,14 +45,23 @@ internal fun DiscoverTab() {
         val scope = rememberCoroutineScope()
         TomoFanficsExplore(
             state = fanficsState,
+            sources = fanficsViewModel.sources,
             modeSwitch = modeSwitch,
+            onSource = fanficsViewModel::setSource,
             onQuery = fanficsViewModel::setQuery,
             onSearch = fanficsViewModel::setSearch,
             onLoadMore = fanficsViewModel::loadMore,
+            onRetry = fanficsViewModel::retry,
+            // Solving Cloudflare in the browser leaves its cookie for Tomo's requests, as with Mihon's extensions
+            onVerify = {
+                val source = fanficsState.source
+                context.startActivity(WebViewActivity.newIntent(context, source.webUrl("/"), source.id, source.name))
+            },
             onToggleFollow = fanficsViewModel::toggleFollow,
             onOpen = { work ->
                 scope.launch { navigator.push(MangaScreen(fanficsViewModel.open(work), fromSource = true)) }
             },
+            onOpenDownloaded = { navigator.push(MangaScreen(it)) },
             onImportFile = { navigator.push(TomoImportScreen(pickFile = true)) },
             onImportLink = { navigator.push(TomoImportScreen()) },
         )

@@ -199,6 +199,8 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
         return withContext(Dispatchers.IO) {
             try {
                 updateChapterList()
+                // Tomo: keep new fanfic chapters on the phone (RF-30h)
+                graph.fanficDownloader.enqueue()
                 // Extensions otherwise only check for updates when the app is opened
                 if (tags.contains(WORK_NAME_AUTO)) extensionManager.checkForUpdates()
                 Result.success()

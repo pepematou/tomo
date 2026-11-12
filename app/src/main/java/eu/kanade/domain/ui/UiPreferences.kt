@@ -8,6 +8,7 @@ import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.domain.ui.model.TimeFormat
+import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
 import logcat.LogPriority
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.preference.PreferenceStore
@@ -45,6 +46,8 @@ class UiPreferences(
 
     /** Tomo: Discover opens on fanfics instead of manga, as the user last left it (RF-30e). */
     val discoverFanfics = preferenceStore.getBoolean("tomo_discover_fanfics", false)
+
+    val fanficSource = preferenceStore.getLong("tomo_fanfic_source", Ao3Source.ID)
 
     companion object {
         fun dateFormat(format: String, locale: Locale): DateTimeFormatter = when (format) {

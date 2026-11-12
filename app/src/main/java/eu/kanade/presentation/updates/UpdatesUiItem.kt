@@ -37,7 +37,7 @@ import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.download.model.Download
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.text.TEXT_SOURCE_IDS
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.roundedfilled.Bookmark
@@ -207,7 +207,7 @@ private fun UpdatesUiItem(
                     )
                 }
                 // Tomo: new chapters of fanfics carry their label (RF-30g)
-                if (update.sourceId == Ao3Source.ID) {
+                if (update.sourceId in TEXT_SOURCE_IDS) {
                     FanficBadge()
                     Spacer(modifier = Modifier.width(4.dp))
                 }

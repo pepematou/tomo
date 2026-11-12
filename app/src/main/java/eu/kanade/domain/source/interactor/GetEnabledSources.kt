@@ -2,7 +2,7 @@ package eu.kanade.domain.source.interactor
 
 import dev.zacsweers.metro.Inject
 import eu.kanade.domain.source.service.SourcePreferences
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.text.TEXT_SOURCE_IDS
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -29,7 +29,7 @@ class GetEnabledSources(
             sources
                 .filter { it.lang in enabledLanguages || it.isLocal() }
                 // Tomo: fanfics live in Descubrir → Fanfics, not among the manga sources
-                .filterNot { it.id == Ao3Source.ID }
+                .filterNot { it.id in TEXT_SOURCE_IDS }
                 .filterNot { it.id.toString() in disabledSources }
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
                 .flatMap {

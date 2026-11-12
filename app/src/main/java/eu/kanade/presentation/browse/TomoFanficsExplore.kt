@@ -61,9 +61,14 @@ import eu.kanade.presentation.tomo.TomoHeader
 import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.tomo.tomoContentWidth
 import eu.kanade.presentation.util.relativeTimeSpanString
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Search
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Work
+import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.text.Fandom
+import eu.kanade.tachiyomi.tomo.text.FanficSearch
+import eu.kanade.tachiyomi.tomo.text.FanficWork
+import eu.kanade.tachiyomi.tomo.text.SourceUnavailableException
+import eu.kanade.tachiyomi.tomo.text.TextSource
 import eu.kanade.tachiyomi.tomo.text.coverHue
+import eu.kanade.tachiyomi.tomo.text.message
 import eu.kanade.tachiyomi.ui.browse.FanficsViewModel
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.Check
@@ -72,33 +77,25 @@ import mihon.icons.materialsymbols.rounded.Public
 import mihon.icons.materialsymbols.rounded.Search
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.LocalFloatingBarInset
+import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import java.text.NumberFormat
 
-/** A popular fandom among works in Spanish: its AO3 tag and the kind of work it comes from. */
-private data class Fandom(val name: String, val kind: String, val tag: String)
-
-private val popularFandoms = listOf(
-    Fandom("Harry Potter", "Libro", "Harry Potter - J. K. Rowling"),
-    Fandom("My Hero Academia", "Anime", "僕のヒーローアカデミア | Boku no Hero Academia | My Hero Academia"),
-    Fandom("Genshin Impact", "Videojuego", "原神 | Genshin Impact (Video Game)"),
-    Fandom("BTS", "Música", "방탄소년단 | Bangtan Boys | BTS"),
-    Fandom("Naruto", "Anime", "Naruto"),
-    Fandom("Marvel", "Película", "Marvel Cinematic Universe"),
-    Fandom("Haikyuu!!", "Anime", "Haikyuu!!"),
-    Fandom("Jujutsu Kaisen", "Anime", "呪術廻戦 | Jujutsu Kaisen (Anime & Manga)"),
-)
-
-/** Discover → Fanfics: Spanish works of Archive of Our Own, searched, filtered by fandom and followed. */
+/** Discover → Fanfics: Spanish works of AO3 or FanFiction.net, searched, filtered by fandom and followed. */
 @Composable
 fun TomoFanficsExplore(
     state: FanficsViewModel.State,
+    sources: List<TextSource>,
     modeSwitch: @Composable () -> Unit,
+    onSource: (TextSource) -> Unit,
     onQuery: (String) -> Unit,
-    onSearch: (Ao3Search) -> Unit,
+    onSearch: (FanficSearch) -> Unit,
     onLoadMore: () -> Unit,
-    onToggleFollow: (Ao3Work) -> Unit,
-    onOpen: (Ao3Work) -> Unit,
+    onRetry: () -> Unit,
+    onVerify: () -> Unit,
+    onToggleFollow: (FanficWork) -> Unit,
+    onOpen: (FanficWork) -> Unit,
+    onOpenDownloaded: (Long) -> Unit,
     onImportFile: () -> Unit,
     onImportLink: () -> Unit,
 ) {
@@ -125,7 +122,7 @@ fun TomoFanficsExplore(
                 Column {
                     TomoHeader(
                         title = stringResource(MR.strings.tomo_fanfics),
-                        subtitle = "Archive of Our Own",
+                        subtitle = state.source.name,
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -144,6 +141,7 @@ fun TomoFanficsExplore(
                 }
             }
             item(key = "mode") { modeSwitch() }
+            item(key = "source") { SourceSwitch(sources, state.source, onSource) }
             item(key = "search") { SearchField(search.query, onQuery) }
             item(key = "chips") {
                 Row(
@@ -161,7 +159,12 @@ fun TomoFanficsExplore(
                     FilterChip(stringResource(MR.strings.tomo_fanfic_short), search.maxWords != null) {
                         onSearch(search.copy(maxWords = if (search.maxWords == null) 10_000 else null))
                     }
-                    FilterChip(stringResource(MR.strings.tomo_fanfic_no_warnings), search.noWarnings) {
+                    val noWarnings = if (state.source.id == Ao3Source.ID) {
+                        MR.strings.tomo_fanfic_no_warnings
+                    } else {
+                        MR.strings.tomo_fanfic_no_mature
+                    }
+                    FilterChip(stringResource(noWarnings), search.noWarnings) {
                         onSearch(search.copy(noWarnings = !search.noWarnings))
                     }
                 }
@@ -176,24 +179,15 @@ fun TomoFanficsExplore(
                         fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    popularFandoms.chunked(2).forEach { row ->
+                    state.source.fandoms.chunked(2).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             row.forEach { fandom ->
                                 FandomTile(
                                     fandom = fandom,
-                                    selected = search.fandom == fandom.tag,
+                                    selected = search.fandom == fandom.filter,
                                     onClick = {
-                                        onSearch(
-                                            search.copy(
-                                                fandom = if (search.fandom ==
-                                                    fandom.tag
-                                                ) {
-                                                    ""
-                                                } else {
-                                                    fandom.tag
-                                                },
-                                            ),
-                                        )
+                                        val selected = search.fandom == fandom.filter
+                                        onSearch(search.copy(fandom = if (selected) "" else fandom.filter))
                                     },
                                     modifier = Modifier.weight(1f),
                                 )
@@ -219,7 +213,7 @@ fun TomoFanficsExplore(
                             Text(stringResource(MR.strings.action_sort), color = Tomo.textSecondary)
                         }
                         DropdownMenu(expanded = sortOpen, onDismissRequest = { sortOpen = false }) {
-                            Ao3Search.Sort.entries.forEach { sort ->
+                            state.source.sorts.forEach { sort ->
                                 DropdownMenuItem(
                                     text = { Text(stringResource(sort.label())) },
                                     onClick = {
@@ -253,10 +247,15 @@ fun TomoFanficsExplore(
                             strokeWidth = 2.dp,
                             modifier = Modifier.size(24.dp),
                         )
-                        state.failed -> Text(
-                            stringResource(MR.strings.tomo_import_error_network),
-                            color = Tomo.amber,
-                            fontSize = 13.sp,
+                        state.problem != null -> ProblemPanel(
+                            reason = state.problem,
+                            source = state.source,
+                            other = sources.first { it != state.source },
+                            downloaded = state.downloaded,
+                            onSource = onSource,
+                            onRetry = onRetry,
+                            onVerify = onVerify,
+                            onOpenDownloaded = onOpenDownloaded,
                         )
                         state.works.isEmpty() -> Text(
                             stringResource(MR.strings.no_results_found),
@@ -294,11 +293,70 @@ fun TomoFanficsExplore(
     }
 }
 
-private fun Ao3Search.Sort.label() = when (this) {
-    Ao3Search.Sort.UPDATED -> MR.strings.tomo_fanfic_sort_updated
-    Ao3Search.Sort.KUDOS -> MR.strings.tomo_fanfic_sort_kudos
-    Ao3Search.Sort.WORDS -> MR.strings.tomo_fanfic_sort_words
-    Ao3Search.Sort.HITS -> MR.strings.tomo_fanfic_sort_hits
+private fun FanficSearch.Sort.label() = when (this) {
+    FanficSearch.Sort.UPDATED -> MR.strings.tomo_fanfic_sort_updated
+    FanficSearch.Sort.KUDOS -> MR.strings.tomo_fanfic_sort_kudos
+    FanficSearch.Sort.WORDS -> MR.strings.tomo_fanfic_sort_words
+    FanficSearch.Sort.HITS -> MR.strings.tomo_fanfic_sort_hits
+    FanficSearch.Sort.FAVORITES -> MR.strings.tomo_fanfic_sort_favorites
+    FanficSearch.Sort.REVIEWS -> MR.strings.tomo_fanfic_sort_reviews
+}
+
+@Composable
+private fun SourceSwitch(sources: List<TextSource>, current: TextSource, onSource: (TextSource) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = Tomo.screenPadding),
+    ) {
+        sources.forEach { source -> FilterChip(source.name, source == current) { onSource(source) } }
+    }
+}
+
+/** Why the site did not answer, with ways to keep reading: the other site, and the fanfics already downloaded. */
+@Composable
+private fun ProblemPanel(
+    reason: SourceUnavailableException.Reason,
+    source: TextSource,
+    other: TextSource,
+    downloaded: List<FanficsViewModel.Downloaded>,
+    onSource: (TextSource) -> Unit,
+    onRetry: () -> Unit,
+    onVerify: () -> Unit,
+    onOpenDownloaded: (Long) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        Text(
+            stringResource(reason.message(), source.name),
+            color = Tomo.amber,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (reason == SourceUnavailableException.Reason.VERIFICATION) {
+                FilterChip(stringResource(MR.strings.tomo_source_verify), selected = true, onClick = onVerify)
+            }
+            FilterChip(stringResource(MR.strings.tomo_search_in, other.name), selected = false) { onSource(other) }
+            FilterChip(stringResource(MR.strings.action_retry), selected = false, onClick = onRetry)
+        }
+        if (downloaded.isNotEmpty()) {
+            Text(
+                stringResource(MR.strings.tomo_fanfic_downloaded_title),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            GlassPanel {
+                downloaded.forEach { work ->
+                    DiscoverRow(
+                        icon = MaterialSymbols.Rounded.MenuBook,
+                        title = work.title,
+                        subtitle = pluralStringResource(MR.plurals.manga_num_chapters, work.chapters, work.chapters),
+                        onClick = { onOpenDownloaded(work.mangaId) },
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -380,7 +438,7 @@ private fun FandomTile(fandom: Fandom, selected: Boolean, onClick: () -> Unit, m
 }
 
 @Composable
-private fun WorkCard(work: Ao3Work, followed: Boolean, onToggleFollow: () -> Unit, onClick: () -> Unit) {
+private fun WorkCard(work: FanficWork, followed: Boolean, onToggleFollow: () -> Unit, onClick: () -> Unit) {
     val meta = work.meta
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -483,7 +541,7 @@ fun FollowButton(followed: Boolean, onClick: () -> Unit, modifier: Modifier = Mo
 
 /** "48 210 palabras · 14 de 20 cap. · En curso · hace 3 días" */
 @Composable
-private fun fanficStats(work: Ao3Work): String {
+private fun fanficStats(work: FanficWork): String {
     val meta = work.meta
     return listOfNotNull(
         stringResource(MR.strings.tomo_fanfic_words, NumberFormat.getIntegerInstance().format(meta.words)),

@@ -10,7 +10,7 @@ import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
 import eu.kanade.tachiyomi.tomo.ChapterLengths
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.text.TEXT_SOURCE_IDS
 import eu.kanade.tachiyomi.tomo.text.TextWorks
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +45,7 @@ class HomeViewModel(
     private val textWorks: TextWorks,
 ) : ViewModel() {
 
-    private fun isText(mangaId: Long, sourceId: Long?) = sourceId == Ao3Source.ID || textWorks.isText(mangaId)
+    private fun isText(mangaId: Long, sourceId: Long?) = sourceId in TEXT_SOURCE_IDS || textWorks.isText(mangaId)
 
     val state: StateFlow<State> = combine(
         getHistory.subscribe("").map { it.take(RECENT_COUNT) },
