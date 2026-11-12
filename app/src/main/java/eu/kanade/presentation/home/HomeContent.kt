@@ -188,7 +188,13 @@ fun HomeContent(
                 }
             }
         }
-        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+        // Above the floating navigation bar, which this screen draws its content under
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = bottomPadding),
+        )
     }
 }
 

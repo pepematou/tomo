@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -29,6 +30,9 @@ import androidx.compose.ui.unit.dp
 /** Extra bottom inset for content drawn behind a floating navigation bar. */
 val LocalFloatingBarInset = compositionLocalOf { 0.dp }
 
+/** Background drawn behind screens that keep the default container color, e.g. Tomo's glass glows. */
+val LocalScreenBackground = staticCompositionLocalOf<Modifier?> { null }
+
 @Composable
 fun Scaffold(
     modifier: Modifier = Modifier,
@@ -40,7 +44,8 @@ fun Scaffold(
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     floatingActionButtonPosition: FabPosition = FabPosition.End,
-    containerColor: Color = MaterialTheme.colorScheme.background,
+    containerColor: Color = LocalScreenBackground.current?.let { Color.Transparent }
+        ?: MaterialTheme.colorScheme.background,
     contentColor: Color = contentColorFor(containerColor),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets
         .add(WindowInsets(bottom = LocalFloatingBarInset.current)),
@@ -49,8 +54,11 @@ fun Scaffold(
     var fabHeight by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 
+    val screenBackground = LocalScreenBackground.current.takeIf { containerColor == Color.Transparent }
     androidx.compose.material3.Scaffold(
-        modifier = modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection),
+        modifier = modifier
+            .then(screenBackground ?: Modifier)
+            .nestedScroll(topBarScrollBehavior.nestedScrollConnection),
         topBar = { topBar(topBarScrollBehavior) },
         bottomBar = bottomBar,
         snackbarHost = snackbarHost,

@@ -5,6 +5,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -51,6 +53,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.kanade.presentation.tomo.LocalGlassTheme
+import eu.kanade.presentation.tomo.Tomo
+import eu.kanade.presentation.tomo.glass
 import kotlinx.coroutines.flow.drop
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.automirroredrounded.ArrowBack
@@ -137,7 +142,7 @@ fun AppBar(
         TopAppBar(
             navigationIcon = {
                 if (isActionMode) {
-                    IconButton(onClick = onCancelActionMode) {
+                    IconButton(onClick = onCancelActionMode, modifier = glassCircle()) {
                         Icon(
                             imageVector = MaterialSymbols.Rounded.Close,
                             contentDescription = stringResource(MR.strings.action_cancel),
@@ -145,7 +150,7 @@ fun AppBar(
                     }
                 } else {
                     navigateUp?.let {
-                        IconButton(onClick = it) {
+                        IconButton(onClick = it, modifier = glassCircle()) {
                             UpIcon(navigationIcon = navigationIcon)
                         }
                     }
@@ -153,11 +158,19 @@ fun AppBar(
             },
             title = titleContent,
             actions = actions,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    elevation = if (isActionMode) 3.dp else 0.dp,
-                ),
-            ),
+            colors = if (LocalGlassTheme.current && backgroundColor == null && !isActionMode) {
+                // Tomo: the bar floats over the background glows and only darkens when content scrolls under it
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Tomo.night.copy(alpha = 0.9f),
+                )
+            } else {
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = backgroundColor ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
+                        elevation = if (isActionMode) 3.dp else 0.dp,
+                    ),
+                )
+            },
             scrollBehavior = scrollBehavior,
         )
     }
@@ -211,6 +224,7 @@ fun AppBarActions(
             IconButton(
                 onClick = it.onClick,
                 enabled = it.enabled,
+                modifier = glassCircle(),
             ) {
                 Icon(
                     imageVector = it.icon,
@@ -235,6 +249,7 @@ fun AppBarActions(
         ) {
             IconButton(
                 onClick = { showMenu = !showMenu },
+                modifier = glassCircle(),
             ) {
                 Icon(
                     MaterialSymbols.Rounded.MoreVert,
@@ -320,6 +335,17 @@ fun SearchToolbar(
                 state = searchFieldState,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(
+                        // Tomo: the search field is a glass pill
+                        if (LocalGlassTheme.current) {
+                            Modifier
+                                .padding(end = 8.dp)
+                                .glass(CircleShape)
+                                .padding(horizontal = 4.dp)
+                        } else {
+                            Modifier
+                        },
+                    )
                     .focusRequester(focusRequester)
                     .runOnEnterKeyPressed(action = searchAndClearFocus)
                     .showSoftKeyboard(remember { searchQuery.isEmpty() })
@@ -376,6 +402,7 @@ fun SearchToolbar(
                     ) {
                         IconButton(
                             onClick = onClick,
+                            modifier = glassCircle(),
                         ) {
                             Icon(
                                 MaterialSymbols.Rounded.Search,
@@ -446,4 +473,14 @@ sealed interface AppBar {
         val title: String,
         val onClick: () -> Unit,
     ) : AppBarAction
+}
+
+/** Round glass background for toolbar icon buttons with the glass theme. */
+@Composable
+private fun glassCircle(): Modifier = if (LocalGlassTheme.current) {
+    Modifier
+        .padding(horizontal = 3.dp)
+        .glass(CircleShape, fill = Tomo.glassStrong)
+} else {
+    Modifier
 }

@@ -10,6 +10,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.ui.model.AppTheme
@@ -31,7 +32,9 @@ import eu.kanade.presentation.theme.colorscheme.TomoColorScheme
 import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
 import eu.kanade.presentation.tomo.LocalGlassTheme
+import eu.kanade.presentation.tomo.tomoBackground
 import mihon.app.di.appGraph
+import tachiyomi.presentation.core.components.material.LocalScreenBackground
 
 @Composable
 fun TachiyomiTheme(
@@ -76,7 +79,12 @@ private fun BaseTachiyomiTheme(
         // Covers and badges use extraSmall: 10 dp corners in Tomo's design
         shapes = if (appTheme == AppTheme.TOMO) TomoShapes else MaterialTheme.shapes,
     ) {
-        CompositionLocalProvider(LocalGlassTheme provides (appTheme == AppTheme.TOMO), content = content)
+        val glass = appTheme == AppTheme.TOMO
+        CompositionLocalProvider(
+            LocalGlassTheme provides glass,
+            LocalScreenBackground provides if (glass) Modifier.tomoBackground() else null,
+            content = content,
+        )
     }
 }
 
