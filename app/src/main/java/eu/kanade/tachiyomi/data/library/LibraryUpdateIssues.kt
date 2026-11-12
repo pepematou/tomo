@@ -38,6 +38,9 @@ class LibraryUpdateIssues(
         } catch (_: Exception) {}
     }
 
+    /** Clears the notice of a series, e.g. once it was migrated to a working source. */
+    fun remove(mangaId: Long) = replace(setOf(mangaId), emptyList())
+
     private fun load(): List<Issue> = try {
         json.decodeFromString<List<Issue>>(file.readText())
     } catch (_: Exception) {
