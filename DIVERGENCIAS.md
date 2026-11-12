@@ -8,6 +8,7 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 
 - No hay migraciones SQL ni tablas nuevas en la base de Mihon.
 - Los avisos de actualización (omitidas y errores) viven en `library_update_issues.json` (`data/library/LibraryUpdateIssues.kt`).
+- Las búsquedas de "Disponible en" se guardan 24 h en `alternatives_cache.json` (`tomo/alternatives/AlternativeFinder.kt`).
 - Las preferencias nuevas usan claves con prefijo `tomo_`.
 
 ## Fase 0: base
@@ -51,3 +52,10 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `presentation/more/settings/screen/SettingsMainScreen.kt`, `SettingsAppearanceScreen.kt` | Ajustes agrupados por tarea |
 | `domain/source/service/SourcePreferences.kt` | Búsquedas recientes (`tomo_recent_searches`) |
 | `ui/browse/source/globalsearch/SearchViewModel.kt`, `GlobalSearchScreen.kt` | Reintentar la búsqueda y búsqueda global de cristal |
+
+## Disponible en y fuentes caídas (v0.12)
+
+| Archivo | Por qué |
+| --- | --- |
+| `ui/manga/MangaScreen.kt` | "Migrar" abre la hoja "Disponible en" con el tema de cristal |
+| `ui/home/HomeTab.kt`, `ui/updates/UpdatesTab.kt` | "Migrar todas" abre la revisión en lote de fuentes caídas |

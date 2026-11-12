@@ -998,4 +998,14 @@
     <string name="tomo_drag_to_reorder">Arrastrar para reordenar</string>
     <string name="tomo_pick_one_source">Elige al menos una fuente</string>
     <string name="tomo_search_in_sources">Buscar en %1$d fuentes</string>
+    <string name="tomo_with_alternative">Con alternativa · %1$d</string>
+    <string name="tomo_without_alternative">Sin alternativa · %1$d</string>
+    <string name="tomo_migrating_progress">Migrando %1$d de %2$d…</string>
+    <string name="tomo_pick_one_series">Elige al menos una serie</string>
+    <string name="tomo_action_choose">Elegir</string>
+    <string name="tomo_found_alternative_for">Encontramos alternativa para %1$d.</string>
+    <string name="tomo_review_before_migrating">Revisa antes de migrar: nada cambia hasta que confirmes.</string>
+    <string name="tomo_no_alternative">Sin alternativa en tus fuentes</string>
+    <string name="tomo_action_change">Cambiar</string>
+    <string name="tomo_search_more">Buscar más</string>
 </resources>

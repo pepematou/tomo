@@ -138,4 +138,16 @@
         <item quantity="one">We found it in %d source.</item>
         <item quantity="other">We found it in %d sources.</item>
     </plurals>
+    <plurals name="tomo_migrated_count">
+        <item quantity="one">Migrated %d series · Done</item>
+        <item quantity="other">Migrated %d series · Done</item>
+    </plurals>
+    <plurals name="tomo_migrate_selected">
+        <item quantity="one">Migrate %d selected</item>
+        <item quantity="other">Migrate %d selected</item>
+    </plurals>
+    <plurals name="tomo_source_down_summary">
+        <item quantity="one">%d series is not updating.</item>
+        <item quantity="other">%d series are not updating.</item>
+    </plurals>
 </resources>

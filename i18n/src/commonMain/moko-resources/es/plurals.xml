@@ -139,4 +139,16 @@
         <item quantity="one">Encontramos la obra en %d fuente.</item>
         <item quantity="other">Encontramos la obra en %d fuentes.</item>
     </plurals>
+    <plurals name="tomo_migrated_count">
+        <item quantity="one">Migraste %d serie · Listo</item>
+        <item quantity="other">Migraste %d series · Listo</item>
+    </plurals>
+    <plurals name="tomo_migrate_selected">
+        <item quantity="one">Migrar %d seleccionada</item>
+        <item quantity="other">Migrar %d seleccionadas</item>
+    </plurals>
+    <plurals name="tomo_source_down_summary">
+        <item quantity="one">%d serie no se actualiza.</item>
+        <item quantity="other">%d series no se actualizan.</item>
+    </plurals>
 </resources>

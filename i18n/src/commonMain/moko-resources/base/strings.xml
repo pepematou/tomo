@@ -1200,4 +1200,14 @@
     <string name="tomo_drag_to_reorder">Drag to reorder</string>
     <string name="tomo_pick_one_source">Choose at least one source</string>
     <string name="tomo_search_in_sources">Search in %1$d sources</string>
+    <string name="tomo_with_alternative">With alternative · %1$d</string>
+    <string name="tomo_without_alternative">No alternative · %1$d</string>
+    <string name="tomo_migrating_progress">Migrating %1$d of %2$d…</string>
+    <string name="tomo_pick_one_series">Choose at least one series</string>
+    <string name="tomo_action_choose">Choose</string>
+    <string name="tomo_found_alternative_for">We found an alternative for %1$d.</string>
+    <string name="tomo_review_before_migrating">Review before migrating: nothing changes until you confirm.</string>
+    <string name="tomo_no_alternative">No alternative in your sources</string>
+    <string name="tomo_action_change">Change</string>
+    <string name="tomo_search_more">Search more</string>
 </resources>

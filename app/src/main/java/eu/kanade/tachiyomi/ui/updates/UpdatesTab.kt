@@ -16,6 +16,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.presentation.updates.UpdateIssuesDialog
 import eu.kanade.presentation.updates.UpdateScreen
 import eu.kanade.presentation.updates.UpdatesDeleteConfirmationDialog
@@ -24,6 +25,7 @@ import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
+import eu.kanade.tachiyomi.ui.library.TomoSourceDownScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -59,6 +61,7 @@ data object UpdatesTab : Tab {
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
+        val glass = LocalGlassTheme.current
         val scope = rememberCoroutineScope()
         val viewModel = metroViewModel<UpdatesViewModel>()
         val settingsViewModel = metroViewModel<UpdatesSettingsViewModel>()
@@ -119,7 +122,7 @@ data object UpdatesTab : Tab {
                     },
                     onMigrate = {
                         onDismissDialog()
-                        navigator.push(MigrationConfigScreen(it))
+                        navigator.push(if (glass) TomoSourceDownScreen(it) else MigrationConfigScreen(it))
                     },
                     onGoToExtensions = {
                         onDismissDialog()
