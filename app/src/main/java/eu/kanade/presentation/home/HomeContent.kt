@@ -162,7 +162,7 @@ fun HomeContent(
                     }
                 }
 
-                val alsoReading = state.history.drop(1)
+                val alsoReading = state.history.drop(1).take(ALSO_READING_COUNT)
                 if (alsoReading.isNotEmpty()) {
                     item(key = "also-reading") {
                         Column {
@@ -217,6 +217,11 @@ fun HomeContent(
                                         group.latestChapterName
                                     },
                                     topStart = { GoldBadge("+${group.count}") },
+                                    topEnd = if (group.isText) {
+                                        { FanficBadge() }
+                                    } else {
+                                        null
+                                    },
                                     onClick = { onClickManga(group.mangaId) },
                                     modifier = Modifier.weight(1f),
                                 )
@@ -281,22 +286,34 @@ private fun ContinueCard(
             if (history.chapterNumber > -1) {
                 val chapter = formatChapterNumber(history.chapterNumber)
                 Text(
-                    text = if (progress != null && progress.page > 0) {
-                        val isText = LocalContext.current.appGraph.textWorks.isText(history.mangaId)
-                        stringResource(
-                            if (isText) MR.strings.tomo_chapter_paragraph else MR.strings.tomo_chapter_page,
+                    text = when {
+                        progress == null || progress.page <= 0 -> stringResource(MR.strings.tomo_chapter_short, chapter)
+                        progress.chapterLength != null -> stringResource(
+                            if (progress.isText) {
+                                MR.strings.tomo_chapter_paragraph_of
+                            } else {
+                                MR.strings.tomo_chapter_page_of
+                            },
+                            chapter,
+                            progress.page,
+                            progress.chapterLength,
+                        )
+                        else -> stringResource(
+                            if (progress.isText) MR.strings.tomo_chapter_paragraph else MR.strings.tomo_chapter_page,
                             chapter,
                             progress.page,
                         )
-                    } else {
-                        stringResource(MR.strings.tomo_chapter_short, chapter)
                     },
                     color = Tomo.textSecondary,
                     fontSize = 13.sp,
                 )
             }
             if (progress != null && progress.totalChapters > 0) {
-                TomoProgressBar(fraction = progress.fraction, modifier = Modifier.padding(vertical = 4.dp))
+                // The chapter being read when its length is known (RF-34), else the series
+                val fraction = progress.chapterLength
+                    ?.let { length -> (progress.page.toFloat() / length).coerceIn(0f, 1f) }
+                    ?: progress.fraction
+                TomoProgressBar(fraction = fraction, modifier = Modifier.padding(vertical = 4.dp))
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -383,6 +400,7 @@ private fun RecentCard(history: HistoryWithRelations, onClick: () -> Unit) {
     }
 }
 
+private const val ALSO_READING_COUNT = 3
 private const val NEW_CHAPTERS_COLUMNS = 3
 private const val NEW_CHAPTERS_SHOWN = 9
 
@@ -429,4 +447,18 @@ internal fun greetingFor(hour: Int): StringResource = when (hour) {
     in 5..11 -> MR.strings.tomo_greeting_morning
     in 12..19 -> MR.strings.tomo_greeting_afternoon
     else -> MR.strings.tomo_greeting_evening
+}
+
+/** "Fanfic" label of new chapters of text works (RF-30g). */
+@Composable
+internal fun FanficBadge() {
+    Text(
+        text = stringResource(MR.strings.tomo_fanfics),
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = Tomo.night,
+        modifier = Modifier
+            .background(Tomo.mint, RoundedCornerShape(8.dp))
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+    )
 }

@@ -8,6 +8,8 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 
 - No hay migraciones SQL ni tablas nuevas en la base de Mihon.
 - Los avisos de actualización (omitidas y errores) viven en `library_update_issues.json` (`data/library/LibraryUpdateIssues.kt`).
+- Los metadatos de AO3 (palabras, capítulos, fandom, parejas, advertencias) van en `memo` de la serie, que ya existe en la base.
+- El número de páginas de cada capítulo abierto se guarda en `chapter_lengths.json` (`tomo/ChapterLengths.kt`).
 - Las obras de texto (fanfics) se marcan en `text_works.json` (`tomo/text/TextWorks.kt`) y viven en la fuente Local como un EPUB por obra.
 - Las búsquedas de "Disponible en" se guardan 24 h en `alternatives_cache.json` (`tomo/alternatives/AlternativeFinder.kt`).
 - Las preferencias nuevas usan claves con prefijo `tomo_`.
@@ -75,3 +77,13 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `ui/main/MainActivity.kt` | Un enlace de AO3 compartido abre la importación en vez de la búsqueda |
 | `AndroidManifest.xml` | Actividad `TextReaderActivity` |
 | `presentation/theme/TomoTypography.kt` | La familia Onest se comparte con el lector de texto |
+
+## Fanfics en español dentro de Tomo (v0.15)
+
+| Archivo | Por qué |
+| --- | --- |
+| `source/AndroidSourceManager.kt` | Registra la fuente integrada `Ao3Source` junto a la Local |
+| `domain/source/interactor/GetEnabledSources.kt` | AO3 no aparece entre las fuentes de manga |
+| `ui/reader/ReaderViewModel.kt` | Guarda el número de páginas del capítulo para "página 36 de 52" en Inicio |
+| `presentation/updates/UpdatesUiItem.kt` | Etiqueta "Fanfic" en los capítulos nuevos de AO3 |
+| `domain/ui/UiPreferences.kt` | Descubrir recuerda si estaba en Manga o en Fanfics |

@@ -1323,4 +1323,6 @@
     <string name="tomo_text_mode_paged">Paged</string>
     <string name="tomo_text_mode_scroll">Continuous</string>
     <string name="tomo_text_font">Typeface</string>
+    <string name="tomo_chapter_page_of">Ch. %1$s · page %2$d of %3$d</string>
+    <string name="tomo_chapter_paragraph_of">Ch. %1$s · paragraph %2$d of %3$d</string>
 </resources>

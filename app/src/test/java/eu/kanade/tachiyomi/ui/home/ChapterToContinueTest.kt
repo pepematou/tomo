@@ -36,6 +36,8 @@ class ChapterToContinueTest {
             libraryUpdateIssues = mockk { every { issues } returns MutableStateFlow(emptyList()) },
             getNextChapters = getNextChapters,
             getChaptersByMangaId = mockk(),
+            chapterLengths = mockk(relaxed = true),
+            textWorks = mockk(relaxed = true),
         )
     }
 

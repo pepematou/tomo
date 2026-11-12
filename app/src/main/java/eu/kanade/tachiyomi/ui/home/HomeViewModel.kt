@@ -9,6 +9,9 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
+import eu.kanade.tachiyomi.tomo.ChapterLengths
+import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.text.TextWorks
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -38,11 +41,17 @@ class HomeViewModel(
     libraryUpdateIssues: LibraryUpdateIssues,
     private val getNextChapters: GetNextChapters,
     private val getChaptersByMangaId: GetChaptersByMangaId,
+    private val chapterLengths: ChapterLengths,
+    private val textWorks: TextWorks,
 ) : ViewModel() {
+
+    private fun isText(mangaId: Long, sourceId: Long?) = sourceId == Ao3Source.ID || textWorks.isText(mangaId)
 
     val state: StateFlow<State> = combine(
         getHistory.subscribe("").map { it.take(RECENT_COUNT) },
-        getUpdates.subscribe(read = false, after = Clock.System.now() - 7.days).map(::groupNewChapters),
+        getUpdates.subscribe(read = false, after = Clock.System.now() - 7.days).map { updates ->
+            groupNewChapters(updates).map { it.copy(isText = isText(it.mangaId, it.sourceId)) }
+        },
         libraryUpdateIssues.issues,
     ) { history, newChapters, issues ->
         State(
@@ -71,6 +80,8 @@ class HomeViewModel(
             page = chapters.find { it.id == history.chapterId }?.lastPageRead?.plus(1) ?: 0,
             readChapters = chapters.count { it.read },
             totalChapters = chapters.size,
+            chapterLength = chapterLengths[history.chapterId],
+            isText = isText(history.mangaId, null),
         )
     }
 
@@ -92,11 +103,20 @@ class HomeViewModel(
         val latest: Instant,
         val latestChapterName: String,
         val latestChapterNumber: Double,
+        val sourceId: Long = 0,
+        val isText: Boolean = false,
     )
 
     /** Mihon stores the page read but not a chapter's page count, so progress is measured over the series. */
     @Immutable
-    data class ReadingProgress(val page: Int, val readChapters: Int, val totalChapters: Int) {
+    data class ReadingProgress(
+        val page: Int,
+        val readChapters: Int,
+        val totalChapters: Int,
+        /** Pages (or text blocks) of the chapter being read, when it was opened before; null if unknown. */
+        val chapterLength: Int? = null,
+        val isText: Boolean = false,
+    ) {
         val fraction: Float get() = if (totalChapters == 0) 0f else readChapters.toFloat() / totalChapters
         val caughtUp: Boolean get() = totalChapters > 0 && readChapters >= totalChapters
     }
@@ -120,6 +140,7 @@ internal fun groupNewChapters(updates: List<UpdatesWithRelations>): List<HomeVie
                 latest = newest.dateFetch,
                 latestChapterName = newest.chapterName,
                 latestChapterNumber = ChapterRecognition.parseChapterNumber(newest.mangaTitle, newest.chapterName),
+                sourceId = newest.sourceId,
             )
         }
         .sortedByDescending { it.latest }
