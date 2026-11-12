@@ -1153,4 +1153,12 @@
     <string name="tomo_settings_advanced_summary">Network, cache and logs</string>
     <string name="tomo_checked_ago">Checked %1$s</string>
     <string name="tomo_update_frequency">Update frequency</string>
+    <string name="tomo_filter_hint">Tap a filter to switch between include, exclude and ignore.</string>
+    <string name="tomo_filter_include">Include</string>
+    <string name="tomo_filter_exclude">Exclude</string>
+    <string name="tomo_filter_source_down">Source down</string>
+    <string name="tomo_sort_hint">Tap the chosen order again to reverse it.</string>
+    <string name="tomo_fewer_columns">Fewer columns</string>
+    <string name="tomo_more_columns">More columns</string>
+    <string name="tomo_appearance">Appearance</string>
 </resources>

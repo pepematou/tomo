@@ -17,8 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,6 +30,7 @@ import eu.kanade.presentation.tomo.GlassPanel
 import eu.kanade.presentation.tomo.Tomo
 import eu.kanade.presentation.tomo.TomoBackground
 import eu.kanade.presentation.tomo.TomoHeader
+import eu.kanade.presentation.tomo.TomoSwitch
 import eu.kanade.presentation.tomo.glass
 import eu.kanade.tachiyomi.BuildConfig
 import mihon.icons.materialsymbols.MaterialSymbols
@@ -176,16 +175,6 @@ private fun GlassSwitchRow(
             Text(text = title, fontSize = 16.sp)
             Text(text = subtitle, fontSize = 13.sp, color = Tomo.textSecondary)
         }
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Tomo.night,
-                checkedTrackColor = Tomo.gold,
-                uncheckedThumbColor = Tomo.textFaint,
-                uncheckedTrackColor = Tomo.glassStrong,
-                uncheckedBorderColor = Tomo.glassBorder,
-            ),
-        )
+        TomoSwitch(checked = checked)
     }
 }

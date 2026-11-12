@@ -32,6 +32,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
+import eu.kanade.presentation.library.TomoLibrarySettingsSheet
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryGlassHeader
 import eu.kanade.presentation.library.components.LibraryToolbar
@@ -245,11 +246,20 @@ data object LibraryTab : Tab {
         val onDismissRequest = viewModel::closeDialog
         when (val dialog = state.dialog) {
             is LibraryViewModel.Dialog.SettingsSheet -> run {
-                LibrarySettingsDialog(
-                    onDismissRequest = onDismissRequest,
-                    viewModel = settingsViewModel,
-                    category = state.activeCategory,
-                )
+                if (LocalGlassTheme.current) {
+                    TomoLibrarySettingsSheet(
+                        onDismissRequest = onDismissRequest,
+                        viewModel = settingsViewModel,
+                        category = state.activeCategory,
+                        seriesCount = state.libraryData.favorites.size,
+                    )
+                } else {
+                    LibrarySettingsDialog(
+                        onDismissRequest = onDismissRequest,
+                        viewModel = settingsViewModel,
+                        category = state.activeCategory,
+                    )
+                }
             }
             is LibraryViewModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(

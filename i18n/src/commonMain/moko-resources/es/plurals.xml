@@ -127,4 +127,8 @@
         <item quantity="one">%1$d disponible</item>
         <item quantity="other">%1$d disponibles</item>
     </plurals>
+    <plurals name="tomo_show_series">
+        <item quantity="one">Ver %d obra</item>
+        <item quantity="other">Ver %d obras</item>
+    </plurals>
 </resources>

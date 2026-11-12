@@ -43,6 +43,7 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `presentation-core/.../material/Scaffold.kt` | Fondo de cristal por defecto y margen de la barra flotante |
 | `presentation/components/AppBar.kt`, `TabbedScreen.kt` | Barras transparentes, botones redondos y buscador en píldora |
 | `presentation/library/components/*` (`LazyLibraryGrid`, `LibraryBadges`, `LibraryComfortableGrid`, `LibraryCompactGrid`, `LibraryTabs`) | Insignia de aviso, columnas e indicador dorado |
+| `ui/library/LibraryViewModel.kt` | Filtro "Fuente caída" (lee `LibraryUpdateIssues`) |
 | `domain/.../LibraryDisplayMode.kt` | Cuadrícula cómoda por defecto |
 | `presentation/manga/MangaScreen.kt` | Ficha de cristal |
 | `presentation/history/HistoryScreen.kt`, `history/components/HistoryItem.kt` | Tarjetas de cristal |

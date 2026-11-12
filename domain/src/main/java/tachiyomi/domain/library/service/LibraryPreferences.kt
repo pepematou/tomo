@@ -93,6 +93,12 @@ class LibraryPreferences(
         TriState.DISABLED,
     )
 
+    /** Tomo: series whose source is gone (missing extension or dead site). */
+    val filterSourceDown: Preference<TriState> = preferenceStore.getEnum(
+        "tomo_filter_source_down",
+        TriState.DISABLED,
+    )
+
     fun filterTracking(id: Int): Preference<TriState> = preferenceStore.getEnum(
         "pref_filter_library_tracked_${id}_v2",
         TriState.DISABLED,

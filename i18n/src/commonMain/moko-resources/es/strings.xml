@@ -951,4 +951,12 @@
     <string name="tomo_settings_advanced_summary">Red, caché y registros</string>
     <string name="tomo_checked_ago">Revisado %1$s</string>
     <string name="tomo_update_frequency">Frecuencia</string>
+    <string name="tomo_filter_hint">Toca un filtro para alternar: incluir, excluir o ignorar.</string>
+    <string name="tomo_filter_include">Incluir</string>
+    <string name="tomo_filter_exclude">Excluir</string>
+    <string name="tomo_filter_source_down">Fuente caída</string>
+    <string name="tomo_sort_hint">Toca otra vez el orden elegido para invertirlo.</string>
+    <string name="tomo_fewer_columns">Menos columnas</string>
+    <string name="tomo_more_columns">Más columnas</string>
+    <string name="tomo_appearance">Apariencia</string>
 </resources>

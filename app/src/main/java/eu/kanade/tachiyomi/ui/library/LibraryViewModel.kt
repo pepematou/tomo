@@ -22,6 +22,8 @@ import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
+import eu.kanade.tachiyomi.data.library.sourceDownIds
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -98,6 +100,7 @@ class LibraryViewModel(
     private val downloadManager: DownloadManager,
     private val downloadCache: DownloadCache,
     private val trackerManager: TrackerManager,
+    private val libraryUpdateIssues: LibraryUpdateIssues,
 ) : ViewModel() {
 
     private val subscriberGate = SubscriberGate()
@@ -110,6 +113,12 @@ class LibraryViewModel(
 
     private val activeCategoryIndex = MutableStateFlow(libraryPreferences.lastUsedCategory.get())
 
+    // Tomo: the "Fuente caída" filter and the ids it applies to
+    private val sourceDownFilter = combine(
+        libraryPreferences.filterSourceDown.changes(),
+        libraryUpdateIssues.issues,
+    ) { filter, issues -> filter to issues.sourceDownIds() }
+
     private val displayPreferences = combine(
         libraryPreferences.categoryTabs.changes(),
         libraryPreferences.categoryNumberOfItems.changes(),
@@ -120,8 +129,10 @@ class LibraryViewModel(
     private val hasActiveFilters = combine(
         getLibraryItemPreferencesFlow(),
         getTrackingFiltersFlow(),
-    ) { prefs, trackFilters ->
+        libraryPreferences.filterSourceDown.changes(),
+    ) { prefs, trackFilters, sourceDown ->
         listOf(
+            sourceDown,
             prefs.filterDownloaded,
             prefs.filterUnread,
             prefs.filterStarted,
@@ -149,12 +160,14 @@ class LibraryViewModel(
         searchQuery.debounce(0.25.seconds),
         getCategories.subscribe(),
         getFavoritesFlow(),
-        combine(tracks, getTrackingFiltersFlow(), ::Pair),
+        combine(tracks, getTrackingFiltersFlow(), sourceDownFilter, ::Triple),
         getLibraryItemPreferencesFlow(),
-    ) { searchQuery, categories, favorites, (tracksMap, trackingFilters), itemPreferences ->
+    ) { searchQuery, categories, favorites, (tracksMap, trackingFilters, sourceDown), itemPreferences ->
         val showSystemCategory = favorites.any { it.libraryManga.categories.contains(0) }
+        val (sourceDownState, sourceDownIds) = sourceDown
         val filteredFavorites = favorites
             .applyFilters(tracksMap, trackingFilters, itemPreferences)
+            .filter { item -> applyFilter(sourceDownState) { item.id in sourceDownIds } }
             .let { libraryItems ->
                 if (searchQuery.isNullOrEmpty()) {
                     libraryItems

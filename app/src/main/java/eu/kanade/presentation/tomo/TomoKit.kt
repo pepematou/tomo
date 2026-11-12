@@ -23,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -307,3 +309,21 @@ fun TomoProgressBar(fraction: Float, modifier: Modifier = Modifier) {
 
 internal val CoverCardWidth = 108.dp
 internal val CoverCardSpacing = 12.dp
+
+/** Mint switch of the glass design; the row around it handles the click. */
+@Composable
+fun TomoSwitch(checked: Boolean, modifier: Modifier = Modifier) {
+    Switch(
+        checked = checked,
+        onCheckedChange = null,
+        modifier = modifier,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = Tomo.night,
+            checkedTrackColor = Tomo.mint,
+            checkedBorderColor = Tomo.mint,
+            uncheckedThumbColor = Tomo.text,
+            uncheckedTrackColor = Tomo.glassStrong,
+            uncheckedBorderColor = Tomo.glassBorder,
+        ),
+    )
+}

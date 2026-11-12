@@ -61,3 +61,11 @@ class LibraryUpdateIssues(
     /** What the user can do to fix the issue. */
     enum class Action { NONE, INSTALL_EXTENSION, MIGRATE, WEBVIEW }
 }
+
+/** Series the last update could not reach because their extension is missing or their site is gone. */
+fun List<LibraryUpdateIssues.Issue>.sourceDownIds(): Set<Long> =
+    filter {
+        it.action == LibraryUpdateIssues.Action.MIGRATE ||
+            it.action == LibraryUpdateIssues.Action.INSTALL_EXTENSION
+    }
+        .mapTo(mutableSetOf()) { it.mangaId }
