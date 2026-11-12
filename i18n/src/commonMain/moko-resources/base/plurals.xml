@@ -150,4 +150,8 @@
         <item quantity="one">%d series is not updating.</item>
         <item quantity="other">%d series are not updating.</item>
     </plurals>
+    <plurals name="tomo_unread_left">
+        <item quantity="one">%d unread chapter</item>
+        <item quantity="other">%d unread chapters</item>
+    </plurals>
 </resources>

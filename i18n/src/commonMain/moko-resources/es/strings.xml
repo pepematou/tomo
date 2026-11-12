@@ -1008,4 +1008,7 @@
     <string name="tomo_no_alternative">Sin alternativa en tus fuentes</string>
     <string name="tomo_action_change">Cambiar</string>
     <string name="tomo_search_more">Buscar más</string>
+    <string name="tomo_also_reading">También leías</string>
+    <string name="tomo_action_keep_reading_short">Seguir</string>
+    <string name="tomo_see_all_count">Ver las %1$d</string>
 </resources>

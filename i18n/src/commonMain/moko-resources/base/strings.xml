@@ -1210,4 +1210,7 @@
     <string name="tomo_no_alternative">No alternative in your sources</string>
     <string name="tomo_action_change">Change</string>
     <string name="tomo_search_more">Search more</string>
+    <string name="tomo_also_reading">You were also reading</string>
+    <string name="tomo_action_keep_reading_short">Continue</string>
+    <string name="tomo_see_all_count">See all %1$d</string>
 </resources>

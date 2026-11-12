@@ -1,7 +1,9 @@
 package eu.kanade.presentation.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
@@ -32,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,6 +55,7 @@ import eu.kanade.presentation.tomo.TomoProgressBar
 import eu.kanade.presentation.tomo.TomoSectionTitle
 import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.util.formatChapterNumber
+import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
 import eu.kanade.tachiyomi.ui.home.HomeViewModel
 import kotlinx.coroutines.delay
@@ -154,6 +159,23 @@ fun HomeContent(
                     }
                 }
 
+                val alsoReading = state.history.drop(1)
+                if (alsoReading.isNotEmpty()) {
+                    item(key = "also-reading") {
+                        Column {
+                            TomoSectionTitle(stringResource(MR.strings.tomo_also_reading))
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = Tomo.screenPadding),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                items(alsoReading, key = { it.id }) { history ->
+                                    RecentCard(history = history, onClick = { onContinue(history) })
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (state.issues.isNotEmpty()) {
                     item(key = "issues") {
                         IssuesNotice(issues = state.issues, onClick = onClickIssues)
@@ -161,35 +183,42 @@ fun HomeContent(
                 }
 
                 if (state.newChapters.isNotEmpty()) {
-                    item(key = "new-chapters") {
-                        Column {
-                            TomoSectionTitle(stringResource(MR.strings.tomo_new_chapters)) {
-                                TextButton(onClick = onSeeAllNewChapters) {
-                                    Text(stringResource(MR.strings.tomo_see_all), color = Tomo.textSecondary)
-                                }
+                    item(key = "new-chapters-title") {
+                        TomoSectionTitle(stringResource(MR.strings.tomo_new_chapters)) {
+                            TextButton(onClick = onSeeAllNewChapters) {
+                                Text(
+                                    text = stringResource(MR.strings.tomo_see_all_count, state.newChapters.size),
+                                    color = Tomo.textSecondary,
+                                )
                             }
-                            LazyRow(
-                                contentPadding = PaddingValues(horizontal = Tomo.screenPadding),
-                                horizontalArrangement = Arrangement.spacedBy(CoverCardSpacing),
-                            ) {
-                                items(state.newChapters, key = { it.mangaId }) { group ->
-                                    CoverCard(
-                                        cover = group.coverData,
-                                        title = group.title,
-                                        subtitle = if (group.latestChapterNumber > -1) {
-                                            stringResource(
-                                                MR.strings.tomo_chapter_short,
-                                                formatChapterNumber(group.latestChapterNumber),
-                                            )
-                                        } else {
-                                            group.latestChapterName
-                                        },
-                                        topStart = { GoldBadge("+${group.count}") },
-                                        onClick = { onClickManga(group.mangaId) },
-                                        modifier = Modifier.width(CoverCardWidth),
-                                    )
-                                }
+                        }
+                    }
+                    items(
+                        state.newChapters.take(NEW_CHAPTERS_SHOWN).chunked(NEW_CHAPTERS_COLUMNS),
+                        key = { row -> "new-${row.first().mangaId}" },
+                    ) { row ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(CoverCardSpacing),
+                            modifier = Modifier.padding(horizontal = Tomo.screenPadding),
+                        ) {
+                            row.forEach { group ->
+                                CoverCard(
+                                    cover = group.coverData,
+                                    title = group.title,
+                                    subtitle = if (group.latestChapterNumber > -1) {
+                                        stringResource(
+                                            MR.strings.tomo_chapter_short,
+                                            formatChapterNumber(group.latestChapterNumber),
+                                        )
+                                    } else {
+                                        group.latestChapterName
+                                    },
+                                    topStart = { GoldBadge("+${group.count}") },
+                                    onClick = { onClickManga(group.mangaId) },
+                                    modifier = Modifier.weight(1f),
+                                )
                             }
+                            repeat(NEW_CHAPTERS_COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
                         }
                     }
                 }
@@ -212,75 +241,142 @@ private fun ContinueCard(
     onContinue: () -> Unit,
     onClickManga: (Long) -> Unit,
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .padding(horizontal = Tomo.screenPadding)
             .fillMaxWidth()
-            .glass(RoundedCornerShape(28.dp))
-            .padding(20.dp),
+            .glass(RoundedCornerShape(24.dp))
+            .padding(14.dp),
     ) {
-        Row {
-            MangaCover.Book(
-                data = history.coverData,
-                contentDescription = history.title,
-                shape = RoundedCornerShape(10.dp),
-                onClick = { onClickManga(history.mangaId) },
-                modifier = Modifier.width(104.dp),
+        MangaCover.Book(
+            data = history.coverData,
+            contentDescription = history.title,
+            shape = RoundedCornerShape(10.dp),
+            onClick = { onClickManga(history.mangaId) },
+            modifier = Modifier.width(88.dp),
+        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp),
+        ) {
+            Text(
+                text = stringResource(MR.strings.tomo_continue_reading),
+                color = Tomo.gold,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
             )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 20.dp),
-            ) {
+            Text(
+                text = history.title,
+                fontSize = 20.sp,
+                lineHeight = 25.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (history.chapterNumber > -1) {
+                val chapter = formatChapterNumber(history.chapterNumber)
                 Text(
-                    text = stringResource(MR.strings.tomo_continue_reading),
-                    color = Tomo.gold,
+                    text = if (progress != null && progress.page > 0) {
+                        stringResource(MR.strings.tomo_chapter_page, chapter, progress.page)
+                    } else {
+                        stringResource(MR.strings.tomo_chapter_short, chapter)
+                    },
+                    color = Tomo.textSecondary,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
                 )
-                Text(
-                    text = history.title,
-                    fontSize = 24.sp,
-                    lineHeight = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (history.chapterNumber > -1) {
-                    val chapter = formatChapterNumber(history.chapterNumber)
+            }
+            if (progress != null && progress.totalChapters > 0) {
+                TomoProgressBar(fraction = progress.fraction, modifier = Modifier.padding(vertical = 4.dp))
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(top = 4.dp),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .height(40.dp)
+                        .background(Tomo.text, CircleShape)
+                        .clickable(role = Role.Button, onClick = onContinue)
+                        .padding(horizontal = 20.dp),
+                ) {
                     Text(
-                        text = if (progress != null && progress.page > 0) {
-                            stringResource(MR.strings.tomo_chapter_page, chapter, progress.page)
-                        } else {
-                            stringResource(MR.strings.tomo_chapter_short, chapter)
-                        },
-                        color = Tomo.textSecondary,
-                        fontSize = 14.sp,
+                        text = stringResource(MR.strings.tomo_action_keep_reading_short),
+                        color = Tomo.night,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
                 if (progress != null && progress.totalChapters > 0) {
-                    TomoProgressBar(fraction = progress.fraction, modifier = Modifier.padding(top = 8.dp))
+                    val unread = progress.totalChapters - progress.readChapters
                     Text(
                         text = if (progress.caughtUp) {
                             stringResource(MR.strings.tomo_caught_up)
                         } else {
-                            stringResource(
-                                MR.strings.tomo_series_progress,
-                                progress.readChapters,
-                                progress.totalChapters,
-                            )
+                            pluralStringResource(MR.plurals.tomo_unread_left, unread, unread)
                         },
-                        color = if (progress.caughtUp) Tomo.mint else Tomo.textFaint,
+                        color = if (progress.caughtUp) Tomo.mint else Tomo.textSecondary,
                         fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
         }
-        Spacer(Modifier.height(20.dp))
-        TomoPrimaryButton(text = stringResource(MR.strings.tomo_action_keep_reading), onClick = onContinue)
     }
 }
+
+/** A series read lately, as a small glass card that resumes it. */
+@Composable
+private fun RecentCard(history: HistoryWithRelations, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .width(200.dp)
+            .glass(RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+    ) {
+        MangaCover.Book(
+            data = history.coverData,
+            shape = RoundedCornerShape(6.dp),
+            modifier = Modifier.width(38.dp),
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 12.dp),
+        ) {
+            Text(
+                text = history.title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = listOfNotNull(
+                    history.chapterNumber.takeIf { it > -1 }?.let {
+                        stringResource(MR.strings.tomo_chapter_short, formatChapterNumber(it))
+                    },
+                    history.readAt?.let {
+                        relativeTimeSpanString(it.toEpochMilliseconds()).replaceFirstChar(Char::lowercase)
+                    },
+                ).joinToString(" · "),
+                color = Tomo.textSecondary,
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+private const val NEW_CHAPTERS_COLUMNS = 3
+private const val NEW_CHAPTERS_SHOWN = 9
 
 @Composable
 private fun IssuesNotice(issues: List<LibraryUpdateIssues.Issue>, onClick: () -> Unit) {

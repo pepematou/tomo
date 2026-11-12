@@ -151,4 +151,8 @@
         <item quantity="one">%d serie no se actualiza.</item>
         <item quantity="other">%d series no se actualizan.</item>
     </plurals>
+    <plurals name="tomo_unread_left">
+        <item quantity="one">%d capítulo sin leer</item>
+        <item quantity="other">%d capítulos sin leer</item>
+    </plurals>
 </resources>
