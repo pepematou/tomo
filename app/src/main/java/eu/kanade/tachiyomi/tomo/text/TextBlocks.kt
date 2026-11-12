@@ -14,7 +14,8 @@ import java.util.zip.ZipOutputStream
 
 /** One block of a text chapter: a heading, a paragraph, a quote or a scene break. */
 data class TextBlock(val kind: Kind, val text: String = "", val spans: List<Span> = emptyList()) {
-    enum class Kind { HEADING, PARAGRAPH, QUOTE, BREAK }
+    /** NOTES are the author's notes, shown folded so they don't interrupt the story. */
+    enum class Kind { HEADING, PARAGRAPH, QUOTE, BREAK, NOTES }
 
     /** Bold or italic run inside [text]. */
     data class Span(val start: Int, val end: Int, val bold: Boolean, val italic: Boolean)
@@ -37,6 +38,11 @@ private fun collectBlocks(element: Element, out: MutableList<TextBlock>) {
     when {
         tag in skippedTags -> return
         tag == "hr" -> out += TextBlock(TextBlock.Kind.BREAK)
+        tag == "aside" && element.hasClass("notes") -> {
+            val paragraphs = element.select("p").map { it.text().trim() }.filter { it.isNotEmpty() }
+            val text = paragraphs.ifEmpty { listOf(element.text().trim()) }.joinToString("\n\n")
+            if (text.isNotBlank()) out += TextBlock(TextBlock.Kind.NOTES, text)
+        }
         tag in headingTags -> inlineBlock(element, TextBlock.Kind.HEADING)?.let(out::add)
         tag in paragraphTags -> inlineBlock(element, TextBlock.Kind.PARAGRAPH)?.let(out::add)
         tag == "blockquote" && element.children().none { it.isBlock } ->

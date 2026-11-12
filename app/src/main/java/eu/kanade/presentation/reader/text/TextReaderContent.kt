@@ -294,7 +294,7 @@ private fun Block(block: TextBlock, style: TextStyle, palette: Palette) {
             ),
             modifier = Modifier.padding(top = 16.dp),
         )
-        TextBlock.Kind.QUOTE -> Text(
+        TextBlock.Kind.QUOTE, TextBlock.Kind.NOTES -> Text(
             text = block.annotated(),
             style = style.copy(fontStyle = FontStyle.Italic, color = palette.muted),
             modifier = Modifier.padding(start = 20.dp),
