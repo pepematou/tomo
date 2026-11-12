@@ -1264,7 +1264,7 @@
     <string name="tomo_type_text">Text</string>
     <string name="tomo_chapter_paragraph">Ch. %1$s, paragraph %2$d</string>
     <string name="tomo_fanfics">Fanfics</string>
-    <string name="tomo_discover_manga">Manga & manhwa</string>
+    <string name="tomo_discover_manga">Manga &amp; manhwa</string>
     <string name="tomo_spanish_only">Spanish only</string>
     <string name="tomo_fanfic_complete">Complete</string>
     <string name="tomo_fanfic_in_progress">In progress</string>

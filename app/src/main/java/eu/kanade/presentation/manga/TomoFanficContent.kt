@@ -307,8 +307,12 @@ fun TomoFanficContent(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        if (chapter.dateUpload > 0) {
-                            Text(relativeTimeSpanString(chapter.dateUpload), fontSize = 11.sp, color = Tomo.textFaint)
+                        chapter.dateUpload?.let { uploaded ->
+                            Text(
+                                text = relativeTimeSpanString(uploaded.toEpochMilliseconds()),
+                                fontSize = 11.sp,
+                                color = Tomo.textFaint,
+                            )
                         }
                     }
                 }
