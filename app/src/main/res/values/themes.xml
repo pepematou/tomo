@@ -559,6 +559,29 @@
         <item name="colorSurfaceContainerHighest">@color/monochrome_surfaceContainerHighest</item>
     </style>
 
+    <!--== Tomo Dark Glass Theme ==-->
+    <style name="Theme.Tachiyomi.Tomo">
+        <item name="colorPrimary">#F4F6FB</item>
+        <item name="colorOnPrimary">#080B14</item>
+        <item name="colorSecondary">#F2C46D</item>
+        <item name="colorOnSecondary">#080B14</item>
+        <item name="colorSecondaryContainer">#373026</item>
+        <item name="colorOnSecondaryContainer">#F2C46D</item>
+        <item name="colorTertiary">#6EE7C1</item>
+        <item name="colorOnTertiary">#080B14</item>
+        <item name="colorError">#FFB45C</item>
+        <item name="colorOnError">#080B14</item>
+        <item name="android:colorBackground">#080B14</item>
+        <item name="colorOnBackground">#F4F6FB</item>
+        <item name="colorSurface">#080B14</item>
+        <item name="colorOnSurface">#F4F6FB</item>
+        <item name="colorSurfaceVariant">#282B33</item>
+        <item name="colorOnSurfaceVariant">#A3ABBD</item>
+        <item name="colorOutline">#30323A</item>
+        <item name="colorSurfaceContainer">#191C24</item>
+        <item name="colorSurfaceContainerHigh">#282B33</item>
+    </style>
+
     <!--== AMOLED Mode Overlay ==-->
     <style name="ThemeOverlay.Tachiyomi.Amoled" parent="" />
 

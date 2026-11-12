@@ -1107,4 +1107,5 @@
     <string name="tomo_new_chapters">New chapters</string>
     <string name="tomo_see_all">See all</string>
     <string name="tomo_home_empty">Your library is empty. Import a backup or find a series in Discover.</string>
+    <string name="tomo_theme_glass">Dark glass</string>
 </resources>

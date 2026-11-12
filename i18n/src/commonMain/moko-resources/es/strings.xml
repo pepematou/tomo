@@ -905,4 +905,5 @@
     <string name="tomo_new_chapters">Novedades</string>
     <string name="tomo_see_all">Ver todo</string>
     <string name="tomo_home_empty">Tu biblioteca está vacía. Importa un respaldo o busca una serie en Descubrir.</string>
+    <string name="tomo_theme_glass">Cristal oscuro</string>
 </resources>
