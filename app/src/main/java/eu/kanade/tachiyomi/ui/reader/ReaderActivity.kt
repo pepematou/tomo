@@ -92,6 +92,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsViewModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
+import eu.kanade.tachiyomi.ui.reader.text.TextReaderActivity
 import eu.kanade.tachiyomi.ui.reader.viewer.LocalPageColorFilter
 import eu.kanade.tachiyomi.ui.reader.viewer.Viewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.Action
@@ -113,6 +114,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import mihon.app.di.AppGraph
+import mihon.app.di.appGraph
 import mihon.core.metro.metroGraph
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.i18n.stringResource
@@ -127,6 +129,10 @@ class ReaderActivity : BaseActivity() {
 
     companion object {
         fun newIntent(context: Context, mangaId: Long?, chapterId: Long?): Intent {
+            // Tomo: text works (fanfics) open in the text reader
+            if (mangaId != null && chapterId != null && context.appGraph.textWorks.isText(mangaId)) {
+                return TextReaderActivity.newIntent(context, mangaId, chapterId)
+            }
             return Intent(context, ReaderActivity::class.java).apply {
                 putExtra("manga", mangaId)
                 putExtra("chapter", chapterId)

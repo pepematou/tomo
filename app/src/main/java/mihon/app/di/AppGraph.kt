@@ -33,6 +33,9 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstallActivity
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
+import eu.kanade.tachiyomi.tomo.text.TextImporter
+import eu.kanade.tachiyomi.tomo.text.TextReaderPreferences
+import eu.kanade.tachiyomi.tomo.text.TextWorks
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegateImpl
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -100,6 +103,9 @@ interface AppGraph : ViewModelGraph {
     val downloadManager: DownloadManager
 
     val libraryUpdateIssues: LibraryUpdateIssues
+    val textWorks: TextWorks
+    val textImporter: TextImporter
+    val textReaderPreferences: TextReaderPreferences
 
     val updateChecker: AppUpdateChecker
 

@@ -9,6 +9,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import eu.kanade.presentation.browse.DiscoverOverview
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
+import eu.kanade.tachiyomi.ui.browse.TomoImportScreen
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsViewModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -35,5 +36,7 @@ internal fun DiscoverTab() {
         onOpenExtensions = { navigator.push(BrowseTabsScreen(initialPage = 1)) },
         onOpenLocal = { navigator.push(BrowseSourceScreen(LocalSource.ID, null)) },
         onOpenMigrate = { navigator.push(BrowseTabsScreen(initialPage = 2)) },
+        onImportFile = { navigator.push(TomoImportScreen(pickFile = true)) },
+        onImportAo3 = { navigator.push(TomoImportScreen()) },
     )
 }

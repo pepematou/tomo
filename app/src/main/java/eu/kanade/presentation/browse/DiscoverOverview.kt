@@ -44,6 +44,8 @@ import mihon.icons.materialsymbols.rounded.ChevronRight
 import mihon.icons.materialsymbols.rounded.Extension
 import mihon.icons.materialsymbols.rounded.Folder
 import mihon.icons.materialsymbols.rounded.GridView
+import mihon.icons.materialsymbols.rounded.MenuBook
+import mihon.icons.materialsymbols.rounded.Public
 import mihon.icons.materialsymbols.rounded.Search
 import mihon.icons.materialsymbols.rounded.SwapHoriz
 import tachiyomi.i18n.MR
@@ -62,6 +64,8 @@ fun DiscoverOverview(
     onOpenExtensions: () -> Unit,
     onOpenLocal: () -> Unit,
     onOpenMigrate: () -> Unit,
+    onImportFile: () -> Unit,
+    onImportAo3: () -> Unit,
 ) {
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
         LocalFloatingBarInset.current + 16.dp
@@ -160,6 +164,26 @@ fun DiscoverOverview(
                             title = stringResource(MR.strings.label_migration),
                             subtitle = stringResource(MR.strings.tomo_migrate_summary),
                             onClick = onOpenMigrate,
+                        )
+                    }
+                }
+            }
+
+            item(key = "import") {
+                Column {
+                    TomoSectionTitle(stringResource(MR.strings.tomo_import))
+                    GlassPanel(modifier = Modifier.padding(horizontal = Tomo.screenPadding)) {
+                        DiscoverRow(
+                            icon = MaterialSymbols.Rounded.MenuBook,
+                            title = stringResource(MR.strings.tomo_import_file),
+                            subtitle = stringResource(MR.strings.tomo_import_file_summary),
+                            onClick = onImportFile,
+                        )
+                        DiscoverRow(
+                            icon = MaterialSymbols.Rounded.Public,
+                            title = stringResource(MR.strings.tomo_import_ao3),
+                            subtitle = stringResource(MR.strings.tomo_import_ao3_summary),
+                            onClick = onImportAo3,
                         )
                     }
                 }

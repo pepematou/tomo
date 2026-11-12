@@ -170,6 +170,11 @@
             android:theme="@style/Theme.Tachiyomi" />
 
         <activity
+            android:name=".ui.reader.text.TextReaderActivity"
+            android:configChanges="uiMode|orientation|screenSize"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.webview.WebViewActivity"
             android:configChanges="uiMode|orientation|screenSize"
             android:exported="false" />

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.sp
 import eu.kanade.tachiyomi.R
 
 // One static file per weight: Android caches a variable font by resource and ignores its weight axis
-private val Onest = FontFamily(
+internal val Onest = FontFamily(
     Font(R.font.onest_regular, FontWeight.Normal),
     Font(R.font.onest_medium, FontWeight.Medium),
     Font(R.font.onest_semibold, FontWeight.SemiBold),
