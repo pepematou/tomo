@@ -71,7 +71,7 @@ data object BrowseTab : Tab {
         val state = rememberPagerState { tabs.size }
 
         TabbedScreen(
-            titleRes = MR.strings.browse,
+            titleRes = MR.strings.tomo_tab_discover,
             tabs = tabs,
             state = state,
             searchQuery = extensionsSearchQuery,

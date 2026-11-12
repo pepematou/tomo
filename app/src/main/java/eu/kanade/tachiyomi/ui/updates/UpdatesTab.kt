@@ -83,6 +83,7 @@ data object UpdatesTab : Tab {
             hasActiveFilters = state.hasActiveFilters,
             updateIssueCount = updateIssues.size,
             onClickUpdateIssues = { viewModel.setDialog(UpdatesViewModel.Dialog.UpdateIssues) },
+            navigateUp = if (navigator.canPop) ({ navigator.pop() }) else null,
         )
 
         val onDismissDialog = { viewModel.setDialog(null) }
