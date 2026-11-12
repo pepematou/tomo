@@ -23,7 +23,7 @@ permissions:
 jobs:
   build:
     name: Build & Test App
-    runs-on: 'ubuntu-26.04'
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
