@@ -1221,4 +1221,14 @@
     <string name="tomo_shelf_source_down">Source down</string>
     <string name="tomo_shelf_read_of">%1$d of %2$d read</string>
     <string name="tomo_see_series">See series</string>
+    <string name="tomo_welcome_title">Welcome to Tomo</string>
+    <string name="tomo_welcome_library_title">Your library</string>
+    <string name="tomo_welcome_library_body">Choose the folder where Tomo keeps your downloads and backups. If you used Mihon, import its backup and you will keep your series, progress and categories.</string>
+    <string name="tomo_welcome_import_backup">Import a Mihon backup</string>
+    <string name="tomo_welcome_extensions_title">Extensions</string>
+    <string name="tomo_welcome_extensions_body">Tomo includes no sources. Add the repository you use and install your extensions from Discover.</string>
+    <string name="tomo_welcome_add_repo">Add repository</string>
+    <string name="tomo_welcome_updates_title">Updates</string>
+    <string name="tomo_welcome_updates_body">Tomo checks your library for new chapters every 12 hours. Allow notifications and turn off battery optimization so it can do it on its own.</string>
+    <string name="tomo_welcome_start">Start</string>
 </resources>

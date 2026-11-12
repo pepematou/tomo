@@ -1019,4 +1019,14 @@
     <string name="tomo_shelf_source_down">Fuente caída</string>
     <string name="tomo_shelf_read_of">%1$d de %2$d leídos</string>
     <string name="tomo_see_series">Ver ficha</string>
+    <string name="tomo_welcome_title">Bienvenido a Tomo</string>
+    <string name="tomo_welcome_library_title">Tu biblioteca</string>
+    <string name="tomo_welcome_library_body">Elige la carpeta donde Tomo guarda tus descargas y respaldos. Si usabas Mihon, importa su respaldo y conservas tus series, progreso y categorías.</string>
+    <string name="tomo_welcome_import_backup">Importar respaldo de Mihon</string>
+    <string name="tomo_welcome_extensions_title">Extensiones</string>
+    <string name="tomo_welcome_extensions_body">Tomo no trae fuentes. Agrega el repositorio que usas e instala tus extensiones desde Descubrir.</string>
+    <string name="tomo_welcome_add_repo">Agregar repositorio</string>
+    <string name="tomo_welcome_updates_title">Actualizaciones</string>
+    <string name="tomo_welcome_updates_body">Tomo revisa tu biblioteca cada 12 horas. Permite las notificaciones y quita la optimización de batería para que lo haga solo.</string>
+    <string name="tomo_welcome_start">Empezar</string>
 </resources>

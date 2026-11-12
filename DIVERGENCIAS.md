@@ -59,3 +59,9 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | --- | --- |
 | `ui/manga/MangaScreen.kt` | "Migrar" abre la hoja "Disponible en" con el tema de cristal |
 | `ui/home/HomeTab.kt`, `ui/updates/UpdatesTab.kt` | "Migrar todas" abre la revisión en lote de fuentes caídas |
+
+## Estante, tablet y bienvenida (v0.13)
+
+| Archivo | Por qué |
+| --- | --- |
+| `presentation/more/onboarding/OnboardingScreen.kt`, `ui/more/OnboardingScreen.kt` | Bienvenida de cristal en 3 pasos y acceso a repositorios |

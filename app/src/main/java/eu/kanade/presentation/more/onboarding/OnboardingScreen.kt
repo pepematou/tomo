@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.RocketLaunch
 import soup.compose.material.motion.animation.materialSharedAxisX
@@ -28,7 +29,12 @@ import tachiyomi.presentation.core.screens.InfoScreen
 fun OnboardingScreen(
     onComplete: () -> Unit,
     onRestoreBackup: () -> Unit,
+    onAddRepo: () -> Unit = {},
 ) {
+    if (LocalGlassTheme.current) {
+        TomoOnboarding(onComplete = onComplete, onRestoreBackup = onRestoreBackup, onAddRepo = onAddRepo)
+        return
+    }
     val slideDistance = rememberSlideDistance()
 
     var currentStep by rememberSaveable { mutableIntStateOf(0) }
