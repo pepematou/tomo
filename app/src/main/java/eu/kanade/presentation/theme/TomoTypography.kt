@@ -1,28 +1,20 @@
 package eu.kanade.presentation.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import eu.kanade.tachiyomi.R
 
-@OptIn(ExperimentalTextApi::class)
-private fun onest(weight: FontWeight) = Font(
-    R.font.onest,
-    weight = weight,
-    variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
-)
-
+// One static file per weight: Android caches a variable font by resource and ignores its weight axis
 private val Onest = FontFamily(
-    onest(FontWeight.Normal),
-    onest(FontWeight.Medium),
-    onest(FontWeight.SemiBold),
-    onest(FontWeight.Bold),
+    Font(R.font.onest_regular, FontWeight.Normal),
+    Font(R.font.onest_medium, FontWeight.Medium),
+    Font(R.font.onest_semibold, FontWeight.SemiBold),
+    Font(R.font.onest_bold, FontWeight.Bold),
 )
 
 private fun TextStyle.onest() = copy(fontFamily = Onest)

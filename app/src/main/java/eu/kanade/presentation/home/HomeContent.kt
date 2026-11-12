@@ -56,10 +56,10 @@ import eu.kanade.tachiyomi.ui.home.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mihon.icons.materialsymbols.MaterialSymbols
-import mihon.icons.materialsymbols.rounded.Error
 import mihon.icons.materialsymbols.rounded.History
 import mihon.icons.materialsymbols.rounded.Refresh
 import mihon.icons.materialsymbols.rounded.Search
+import mihon.icons.materialsymbols.rounded.Warning
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.LocalFloatingBarInset
@@ -69,7 +69,6 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import java.time.LocalTime
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -250,7 +249,7 @@ private fun ContinueCard(
                 if (progress != null && progress.totalChapters > 0) {
                     TomoProgressBar(fraction = progress.fraction, modifier = Modifier.padding(top = 8.dp))
                     Text(
-                        text = stringResource(MR.strings.tomo_series_progress, (progress.fraction * 100).roundToInt()),
+                        text = stringResource(MR.strings.tomo_series_progress, (progress.fraction * 100).toInt()),
                         color = Tomo.textFaint,
                         fontSize = 12.sp,
                     )
@@ -279,7 +278,7 @@ private fun IssuesNotice(issues: List<LibraryUpdateIssues.Issue>, onClick: () ->
             .clickable(onClick = onClick)
             .padding(16.dp),
     ) {
-        Icon(imageVector = MaterialSymbols.Rounded.Error, contentDescription = null, tint = Tomo.amber)
+        Icon(imageVector = MaterialSymbols.Rounded.Warning, contentDescription = null, tint = Tomo.amber)
         Column(
             modifier = Modifier
                 .weight(1f)
