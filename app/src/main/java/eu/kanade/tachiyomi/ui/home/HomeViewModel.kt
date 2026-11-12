@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
+import tachiyomi.domain.chapter.service.ChapterRecognition
 import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.history.model.HistoryWithRelations
@@ -90,12 +91,14 @@ class HomeViewModel(
         val count: Int,
         val latest: Instant,
         val latestChapterName: String,
+        val latestChapterNumber: Double,
     )
 
     /** Mihon stores the page read but not a chapter's page count, so progress is measured over the series. */
     @Immutable
     data class ReadingProgress(val page: Int, val readChapters: Int, val totalChapters: Int) {
         val fraction: Float get() = if (totalChapters == 0) 0f else readChapters.toFloat() / totalChapters
+        val caughtUp: Boolean get() = totalChapters > 0 && readChapters >= totalChapters
     }
 
     companion object {
@@ -116,6 +119,7 @@ internal fun groupNewChapters(updates: List<UpdatesWithRelations>): List<HomeVie
                 count = chapters.size,
                 latest = newest.dateFetch,
                 latestChapterName = newest.chapterName,
+                latestChapterNumber = ChapterRecognition.parseChapterNumber(newest.mangaTitle, newest.chapterName),
             )
         }
         .sortedByDescending { it.latest }

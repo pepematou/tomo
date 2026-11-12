@@ -37,5 +37,6 @@ class GroupNewChaptersTest {
         groups.map { it.mangaId to it.count } shouldBe listOf(1L to 3, 2L to 1)
         groups.first().latest shouldBe Instant.fromEpochSeconds(300)
         groups.first().latestChapterName shouldBe "Chapter 3"
+        groups.first().latestChapterNumber shouldBe 3.0
     }
 }

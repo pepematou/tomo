@@ -211,7 +211,12 @@ fun GoldBadge(text: String, modifier: Modifier = Modifier) {
 
 /** Small glass pill used for metadata: "En curso", "Manga". */
 @Composable
-fun GlassPill(text: String, modifier: Modifier = Modifier, leading: (@Composable () -> Unit)? = null) {
+fun GlassPill(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color? = null,
+    leading: (@Composable () -> Unit)? = null,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -220,7 +225,7 @@ fun GlassPill(text: String, modifier: Modifier = Modifier, leading: (@Composable
             .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         leading?.invoke()
-        Text(text = text, fontSize = 13.sp, color = Tomo.text)
+        Text(text = text, fontSize = 13.sp, color = color ?: Tomo.text)
     }
 }
 

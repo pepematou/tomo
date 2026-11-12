@@ -2,17 +2,16 @@ package eu.kanade.presentation.manga.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -66,6 +65,9 @@ fun TomoMangaHeader(
     onCoverClick: () -> Unit,
 ) {
     val cover = manga.asMangaCover()
+    // Mihon names a source whose extension is missing by its numeric id
+    val sourceMissing = sourceName == manga.source.toString()
+    val sourceLabel = if (sourceMissing) stringResource(MR.strings.tomo_extension_not_installed) else sourceName
     Box(modifier = Modifier.fillMaxWidth()) {
         AsyncImage(
             model = cover,
@@ -120,14 +122,17 @@ fun TomoMangaHeader(
             )
             val creator = listOfNotNull(manga.author, manga.artist).distinct().joinToString()
             Text(
-                text = creator.ifBlank { sourceName },
+                text = creator.ifBlank { sourceLabel },
                 color = Tomo.textSecondary,
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 GlassPill(statusText(manga.status))
-                GlassPill(sourceName)
+                GlassPill(sourceLabel, color = if (sourceMissing) Tomo.amber else null)
                 GlassPill(pluralStringResource(MR.plurals.manga_num_chapters, chapterCount, chapterCount))
             }
             manga.lastUpdate?.let { checked ->
@@ -163,11 +168,11 @@ fun TomoMangaActions(
     onWebViewClicked: (() -> Unit)?,
     onEditIntervalClicked: (() -> Unit)?,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(horizontal = Tomo.screenPadding, vertical = 16.dp),
     ) {
         ActionPill(

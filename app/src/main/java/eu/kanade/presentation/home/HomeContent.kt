@@ -176,7 +176,14 @@ fun HomeContent(
                                     CoverCard(
                                         cover = group.coverData,
                                         title = group.title,
-                                        subtitle = group.latestChapterName,
+                                        subtitle = if (group.latestChapterNumber > -1) {
+                                            stringResource(
+                                                MR.strings.tomo_chapter_short,
+                                                formatChapterNumber(group.latestChapterNumber),
+                                            )
+                                        } else {
+                                            group.latestChapterName
+                                        },
                                         topStart = { GoldBadge("+${group.count}") },
                                         onClick = { onClickManga(group.mangaId) },
                                         modifier = Modifier.width(CoverCardWidth),
@@ -255,8 +262,16 @@ private fun ContinueCard(
                 if (progress != null && progress.totalChapters > 0) {
                     TomoProgressBar(fraction = progress.fraction, modifier = Modifier.padding(top = 8.dp))
                     Text(
-                        text = stringResource(MR.strings.tomo_series_progress, (progress.fraction * 100).toInt()),
-                        color = Tomo.textFaint,
+                        text = if (progress.caughtUp) {
+                            stringResource(MR.strings.tomo_caught_up)
+                        } else {
+                            stringResource(
+                                MR.strings.tomo_series_progress,
+                                progress.readChapters,
+                                progress.totalChapters,
+                            )
+                        },
+                        color = if (progress.caughtUp) Tomo.mint else Tomo.textFaint,
                         fontSize = 12.sp,
                     )
                 }

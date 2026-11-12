@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -27,6 +28,7 @@ import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.presentation.tomo.Tomo
 import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.util.formatChapterNumber
+import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.util.lang.toTimestampString
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.Delete
@@ -85,11 +87,21 @@ fun HistoryItem(
                 overflow = TextOverflow.Ellipsis,
                 style = textStyle,
             )
-            val readAt = remember(timeFormatter, history.readAt) {
+            val glass = LocalGlassTheme.current
+            val formattedTime = remember(timeFormatter, history.readAt) {
                 history.readAt?.toTimestampString(timeFormatter) ?: ""
             }
+            // Tomo: "Cap. 12 · hace 2 h" instead of a clock time
+            val readAt = if (glass) {
+                history.readAt?.let { relativeTimeSpanString(it.toEpochMilliseconds()) } ?: ""
+            } else {
+                formattedTime
+            }
             Text(
-                text = if (history.chapterNumber > -1) {
+                text = if (glass && history.chapterNumber > -1) {
+                    stringResource(MR.strings.tomo_chapter_short, formatChapterNumber(history.chapterNumber)) +
+                        " · " + readAt
+                } else if (history.chapterNumber > -1) {
                     stringResource(
                         MR.strings.recent_manga_time,
                         formatChapterNumber(history.chapterNumber),
@@ -100,6 +112,7 @@ fun HistoryItem(
                 },
                 modifier = Modifier.padding(top = 4.dp),
                 style = textStyle,
+                color = if (glass) Tomo.textSecondary else Color.Unspecified,
             )
         }
 
