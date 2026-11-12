@@ -131,4 +131,8 @@
         <item quantity="one">Ver %d obra</item>
         <item quantity="other">Ver %d obras</item>
     </plurals>
+    <plurals name="tomo_no_results_in">
+        <item quantity="one">Sin resultados en %d fuente más</item>
+        <item quantity="other">Sin resultados en %d fuentes más</item>
+    </plurals>
 </resources>

@@ -49,3 +49,5 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `presentation/history/HistoryScreen.kt`, `history/components/HistoryItem.kt` | Tarjetas de cristal |
 | `presentation/more/MoreScreen.kt` | Tú de cristal |
 | `presentation/more/settings/screen/SettingsMainScreen.kt`, `SettingsAppearanceScreen.kt` | Ajustes agrupados por tarea |
+| `domain/source/service/SourcePreferences.kt` | Búsquedas recientes (`tomo_recent_searches`) |
+| `ui/browse/source/globalsearch/SearchViewModel.kt`, `GlobalSearchScreen.kt` | Reintentar la búsqueda y búsqueda global de cristal |

@@ -130,4 +130,8 @@
         <item quantity="one">Show %d series</item>
         <item quantity="other">Show %d series</item>
     </plurals>
+    <plurals name="tomo_no_results_in">
+        <item quantity="one">No results in %d more source</item>
+        <item quantity="other">No results in %d more sources</item>
+    </plurals>
 </resources>

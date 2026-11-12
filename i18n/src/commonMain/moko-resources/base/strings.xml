@@ -1161,4 +1161,8 @@
     <string name="tomo_fewer_columns">Fewer columns</string>
     <string name="tomo_more_columns">More columns</string>
     <string name="tomo_appearance">Appearance</string>
+    <string name="tomo_recent_searches">Recent searches</string>
+    <string name="tomo_pinned_sources">Pinned sources</string>
+    <string name="tomo_remove_recent">Remove %1$s from recent searches</string>
+    <string name="tomo_source_no_response">%1$s did not respond.</string>
 </resources>

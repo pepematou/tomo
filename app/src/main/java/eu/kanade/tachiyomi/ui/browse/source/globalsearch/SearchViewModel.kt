@@ -124,6 +124,12 @@ abstract class SearchViewModel(
         preferences.globalSearchFilterState.toggle()
     }
 
+    /** Tomo: runs the current search again, including sources that already answered or failed. */
+    fun retry() {
+        lastQuery = null
+        search()
+    }
+
     fun search() {
         val query = state.value.searchQuery
         val sourceFilter = state.value.sourceFilter

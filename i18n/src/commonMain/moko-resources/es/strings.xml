@@ -959,4 +959,8 @@
     <string name="tomo_fewer_columns">Menos columnas</string>
     <string name="tomo_more_columns">Más columnas</string>
     <string name="tomo_appearance">Apariencia</string>
+    <string name="tomo_recent_searches">Búsquedas recientes</string>
+    <string name="tomo_pinned_sources">Fuentes ancladas</string>
+    <string name="tomo_remove_recent">Quitar %1$s de recientes</string>
+    <string name="tomo_source_no_response">%1$s no respondió.</string>
 </resources>

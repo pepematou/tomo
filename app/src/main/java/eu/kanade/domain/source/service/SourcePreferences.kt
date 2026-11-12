@@ -38,6 +38,9 @@ class SourcePreferences(
 
     val pinnedSources: Preference<Set<String>> = preferenceStore.getStringSet("pinned_catalogues", emptySet())
 
+    /** Tomo: global searches, newest first, one per line. */
+    val recentSearches: Preference<String> = preferenceStore.getString("tomo_recent_searches", "")
+
     val lastUsedSource: Preference<Long> = preferenceStore.getLong(
         Preference.appStateKey("last_catalogue_source"),
         -1,
