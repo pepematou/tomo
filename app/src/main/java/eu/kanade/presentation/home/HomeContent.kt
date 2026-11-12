@@ -1,25 +1,25 @@
 package eu.kanade.presentation.home
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -32,32 +32,44 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.AppBarActions
+import androidx.compose.ui.unit.sp
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.manga.components.MangaCover
-import eu.kanade.presentation.updates.UpdateIssuesBanner
+import eu.kanade.presentation.tomo.CoverCard
+import eu.kanade.presentation.tomo.CoverCardSpacing
+import eu.kanade.presentation.tomo.CoverCardWidth
+import eu.kanade.presentation.tomo.GlassIconButton
+import eu.kanade.presentation.tomo.GoldBadge
+import eu.kanade.presentation.tomo.Tomo
+import eu.kanade.presentation.tomo.TomoBackground
+import eu.kanade.presentation.tomo.TomoHeader
+import eu.kanade.presentation.tomo.TomoPrimaryButton
+import eu.kanade.presentation.tomo.TomoProgressBar
+import eu.kanade.presentation.tomo.TomoSectionTitle
+import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.util.formatChapterNumber
+import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
 import eu.kanade.tachiyomi.ui.home.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mihon.icons.materialsymbols.MaterialSymbols
+import mihon.icons.materialsymbols.rounded.Error
 import mihon.icons.materialsymbols.rounded.History
 import mihon.icons.materialsymbols.rounded.Refresh
+import mihon.icons.materialsymbols.rounded.Search
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.material.LocalFloatingBarInset
 import tachiyomi.presentation.core.components.material.PullRefresh
-import tachiyomi.presentation.core.components.material.Scaffold
-import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import java.time.LocalTime
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -68,42 +80,20 @@ fun HomeContent(
     onClickManga: (mangaId: Long) -> Unit,
     onSeeAllNewChapters: () -> Unit,
     onClickHistory: () -> Unit,
+    onClickSearch: () -> Unit,
     onClickIssues: () -> Unit,
     onUpdateLibrary: suspend () -> Boolean,
 ) {
     val scope = rememberCoroutineScope()
+    var isRefreshing by remember { mutableStateOf(false) }
+    val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+        LocalFloatingBarInset.current + 16.dp
 
-    Scaffold(
-        topBar = { scrollBehavior ->
-            AppBar(
-                title = stringResource(MR.strings.tomo_tab_home),
-                actions = {
-                    AppBarActions(
-                        listOf(
-                            AppBar.Action(
-                                title = stringResource(MR.strings.label_recent_manga),
-                                icon = MaterialSymbols.Rounded.History,
-                                onClick = onClickHistory,
-                            ),
-                            AppBar.Action(
-                                title = stringResource(MR.strings.action_update_library),
-                                icon = MaterialSymbols.Rounded.Refresh,
-                                onClick = { scope.launch { onUpdateLibrary() } },
-                            ),
-                        ),
-                    )
-                },
-                scrollBehavior = scrollBehavior,
-            )
-        },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    ) { contentPadding ->
+    TomoBackground {
         if (state.isLoading) {
-            LoadingScreen(Modifier.padding(contentPadding))
-            return@Scaffold
+            LoadingScreen()
+            return@TomoBackground
         }
-
-        var isRefreshing by remember { mutableStateOf(false) }
         PullRefresh(
             refreshing = isRefreshing,
             enabled = true,
@@ -116,197 +106,203 @@ fun HomeContent(
                     isRefreshing = false
                 }
             },
-            indicatorPadding = contentPadding,
         ) {
-            val isEmpty = state.history.isEmpty() && state.newChapters.isEmpty() && state.issues.isEmpty()
-            if (isEmpty) {
-                EmptyScreen(
-                    stringRes = MR.strings.tomo_home_empty,
-                    modifier = Modifier.padding(contentPadding).fillMaxSize(),
-                )
-                return@PullRefresh
-            }
-
             LazyColumn(
-                contentPadding = contentPadding,
-                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = bottomPadding),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding(),
             ) {
-                state.history.firstOrNull()?.let { last ->
+                item(key = "header") {
+                    TomoHeader(
+                        title = stringResource(MR.strings.tomo_tab_home),
+                        subtitle = stringResource(greetingFor(LocalTime.now().hour)),
+                    ) {
+                        GlassIconButton(
+                            icon = MaterialSymbols.Rounded.Search,
+                            contentDescription = stringResource(MR.strings.action_search),
+                            onClick = onClickSearch,
+                        )
+                        GlassIconButton(
+                            icon = MaterialSymbols.Rounded.History,
+                            contentDescription = stringResource(MR.strings.label_recent_manga),
+                            onClick = onClickHistory,
+                        )
+                        GlassIconButton(
+                            icon = MaterialSymbols.Rounded.Refresh,
+                            contentDescription = stringResource(MR.strings.action_update_library),
+                            onClick = { scope.launch { onUpdateLibrary() } },
+                        )
+                    }
+                }
+
+                val last = state.history.firstOrNull()
+                if (last == null && state.newChapters.isEmpty() && state.issues.isEmpty()) {
+                    item(key = "empty") {
+                        EmptyScreen(stringRes = MR.strings.tomo_home_empty, modifier = Modifier.height(400.dp))
+                    }
+                }
+
+                if (last != null) {
                     item(key = "continue") {
-                        SectionTitle(stringResource(MR.strings.tomo_continue_reading))
-                        ContinueCard(history = last, onContinue = { onContinue(last) }, onClickManga = onClickManga)
-                    }
-                }
-
-                val recent = state.history.drop(1)
-                if (recent.isNotEmpty()) {
-                    item(key = "recent") {
-                        SectionTitle(stringResource(MR.strings.tomo_recent))
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = MaterialTheme.padding.medium),
-                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
-                        ) {
-                            items(recent, key = { it.id }) { history ->
-                                MangaCover.Book(
-                                    data = history.coverData,
-                                    contentDescription = history.title,
-                                    modifier = Modifier.width(96.dp),
-                                    onClick = { onClickManga(history.mangaId) },
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (state.newChapters.isNotEmpty()) {
-                    item(key = "new-header") {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            SectionTitle(stringResource(MR.strings.tomo_new_chapters), Modifier.weight(1f))
-                            TextButton(onClick = onSeeAllNewChapters) {
-                                Text(stringResource(MR.strings.tomo_see_all))
-                            }
-                        }
-                    }
-                    item(key = "new-chapters") {
-                        GlassPanel {
-                            state.newChapters.take(NEW_CHAPTERS_SHOWN).forEach { group ->
-                                NewChaptersRow(group = group, onClick = { onClickManga(group.mangaId) })
-                            }
-                        }
+                        ContinueCard(
+                            history = last,
+                            progress = state.continueProgress,
+                            onContinue = { onContinue(last) },
+                            onClickManga = onClickManga,
+                        )
                     }
                 }
 
                 if (state.issues.isNotEmpty()) {
                     item(key = "issues") {
-                        UpdateIssuesBanner(count = state.issues.size, onClick = onClickIssues)
+                        IssuesNotice(issues = state.issues, onClick = onClickIssues)
+                    }
+                }
+
+                if (state.newChapters.isNotEmpty()) {
+                    item(key = "new-chapters") {
+                        Column {
+                            TomoSectionTitle(stringResource(MR.strings.tomo_new_chapters)) {
+                                TextButton(onClick = onSeeAllNewChapters) {
+                                    Text(stringResource(MR.strings.tomo_see_all), color = Tomo.textSecondary)
+                                }
+                            }
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = Tomo.screenPadding),
+                                horizontalArrangement = Arrangement.spacedBy(CoverCardSpacing),
+                            ) {
+                                items(state.newChapters, key = { it.mangaId }) { group ->
+                                    CoverCard(
+                                        cover = group.coverData,
+                                        title = group.title,
+                                        subtitle = group.latestChapterName,
+                                        topStart = { GoldBadge("+${group.count}") },
+                                        onClick = { onClickManga(group.mangaId) },
+                                        modifier = Modifier.width(CoverCardWidth),
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
-}
-
-@Composable
-private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        modifier = modifier.padding(
-            horizontal = MaterialTheme.padding.medium,
-            vertical = MaterialTheme.padding.small,
-        ),
-    )
 }
 
 @Composable
 private fun ContinueCard(
     history: HistoryWithRelations,
+    progress: HomeViewModel.ReadingProgress?,
     onContinue: () -> Unit,
     onClickManga: (Long) -> Unit,
 ) {
-    val shape = RoundedCornerShape(28.dp)
-    Box(
+    Column(
         modifier = Modifier
+            .padding(horizontal = Tomo.screenPadding)
             .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.padding.medium)
-            .clip(shape)
-            .border(1.dp, MaterialTheme.colorScheme.outline, shape),
+            .glass(RoundedCornerShape(28.dp))
+            .padding(20.dp),
     ) {
-        // The card takes the color of the series: its own cover, blurred, behind a glass veil
-        AsyncImage(
-            model = history.coverData,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .matchParentSize()
-                .blur(40.dp),
-        )
-        Box(
-            Modifier
-                .matchParentSize()
-                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f)),
-        )
-        Row(
-            modifier = Modifier.padding(MaterialTheme.padding.medium).height(140.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row {
             MangaCover.Book(
                 data = history.coverData,
                 contentDescription = history.title,
-                modifier = Modifier.width(92.dp),
+                shape = RoundedCornerShape(10.dp),
                 onClick = { onClickManga(history.mangaId) },
+                modifier = Modifier.width(104.dp),
             )
             Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = MaterialTheme.padding.medium),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
+                    .padding(start = 20.dp),
             ) {
                 Text(
-                    text = history.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    text = stringResource(MR.strings.tomo_continue_reading),
+                    color = Tomo.gold,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = history.title,
+                    fontSize = 24.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (history.chapterNumber > -1) {
+                    val chapter = formatChapterNumber(history.chapterNumber)
                     Text(
-                        text = stringResource(
-                            MR.strings.display_mode_chapter,
-                            formatChapterNumber(history.chapterNumber),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = if (progress != null && progress.page > 0) {
+                            stringResource(MR.strings.tomo_chapter_page, chapter, progress.page)
+                        } else {
+                            stringResource(MR.strings.tomo_chapter_short, chapter)
+                        },
+                        color = Tomo.textSecondary,
+                        fontSize = 14.sp,
                     )
                 }
-                Button(onClick = onContinue) {
-                    Text(stringResource(MR.strings.tomo_action_continue))
+                if (progress != null && progress.totalChapters > 0) {
+                    TomoProgressBar(fraction = progress.fraction, modifier = Modifier.padding(top = 8.dp))
+                    Text(
+                        text = stringResource(MR.strings.tomo_series_progress, (progress.fraction * 100).roundToInt()),
+                        color = Tomo.textFaint,
+                        fontSize = 12.sp,
+                    )
                 }
             }
         }
+        Spacer(Modifier.height(20.dp))
+        TomoPrimaryButton(text = stringResource(MR.strings.tomo_action_keep_reading), onClick = onContinue)
     }
 }
 
 @Composable
-private fun GlassPanel(content: @Composable () -> Unit) {
-    val shape = RoundedCornerShape(24.dp)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.padding.medium)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
-            .padding(vertical = MaterialTheme.padding.small),
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun NewChaptersRow(group: HomeViewModel.NewChapters, onClick: () -> Unit) {
+private fun IssuesNotice(issues: List<LibraryUpdateIssues.Issue>, onClick: () -> Unit) {
+    val skipped = issues.count { it.kind == LibraryUpdateIssues.Kind.SKIPPED }
+    val failed = issues.size - skipped
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .height(72.dp)
-            .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.extraSmall),
         verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = Tomo.screenPadding)
+            .fillMaxWidth()
+            .glass(
+                RoundedCornerShape(20.dp),
+                fill = Tomo.amber.copy(alpha = 0.08f),
+                border = Tomo.amber.copy(alpha = 0.30f),
+            )
+            .clickable(onClick = onClick)
+            .padding(16.dp),
     ) {
-        MangaCover.Book(data = group.coverData, modifier = Modifier.width(44.dp))
-        Text(
-            text = group.title,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        Icon(imageVector = MaterialSymbols.Rounded.Error, contentDescription = null, tint = Tomo.amber)
+        Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = MaterialTheme.padding.medium),
-        )
-        Text(
-            text = "+${group.count}",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
+                .padding(horizontal = 12.dp),
+        ) {
+            Text(
+                text = pluralStringResource(MR.plurals.update_issues_count, issues.size, issues.size),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = stringResource(MR.strings.tomo_issues_detail, skipped, failed),
+                color = Tomo.textSecondary,
+                fontSize = 13.sp,
+            )
+        }
+        Text(text = stringResource(MR.strings.tomo_action_see), color = Tomo.amber, fontWeight = FontWeight.SemiBold)
     }
 }
 
-private const val NEW_CHAPTERS_SHOWN = 5
+/** The line above the title changes with the time of day, as in the mockup ("Buenas tardes"). */
+internal fun greetingFor(hour: Int): StringResource = when (hour) {
+    in 5..11 -> MR.strings.tomo_greeting_morning
+    in 12..19 -> MR.strings.tomo_greeting_afternoon
+    else -> MR.strings.tomo_greeting_evening
+}

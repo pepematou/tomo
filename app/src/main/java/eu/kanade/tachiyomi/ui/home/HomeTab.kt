@@ -71,6 +71,7 @@ data object HomeTab : Tab {
             onClickManga = { navigator.push(MangaScreen(it)) },
             onSeeAllNewChapters = { navigator.push(UpdatesTab) },
             onClickHistory = { navigator.push(HistoryTab) },
+            onClickSearch = { scope.launch { HomeScreen.search("") } },
             onClickIssues = { showIssues = true },
             onUpdateLibrary = {
                 val started = LibraryUpdateWorker.startNow(context.workManager)
