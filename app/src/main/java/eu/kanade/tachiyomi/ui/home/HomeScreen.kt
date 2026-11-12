@@ -44,7 +44,6 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import eu.kanade.domain.ui.model.AppTheme
-import eu.kanade.presentation.tomo.LocalUpdateIssueIds
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
@@ -120,12 +119,7 @@ object HomeScreen : Screen() {
                     }
                 }
 
-                val issueIds by remember {
-                    context.appGraph.libraryUpdateIssues.issues.map { all -> all.mapTo(HashSet()) { it.mangaId } }
-                }.collectAsState(emptySet())
-                val tabContent: @Composable () -> Unit = {
-                    CompositionLocalProvider(LocalUpdateIssueIds provides issueIds) { TabsContent(tabNavigator) }
-                }
+                val tabContent: @Composable () -> Unit = { TabsContent(tabNavigator) }
                 NavigationSuiteScaffold(
                     navigationSuiteType = if (glassBar) NavigationSuiteType.None else navigationSuiteType,
                     state = navigationSuiteState,

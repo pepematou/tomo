@@ -52,9 +52,6 @@ import tachiyomi.domain.manga.model.MangaCover as MangaCoverData
 /** Whether the dark glass theme is active, so shared Mihon screens can switch to Tomo's look. */
 val LocalGlassTheme = staticCompositionLocalOf { false }
 
-/** Series ids that the last library update skipped or failed on, for the warning badge on covers. */
-val LocalUpdateIssueIds = staticCompositionLocalOf { emptySet<Long>() }
-
 /** Tokens of Tomo's dark glass design (plan-tomo.md §6). */
 object Tomo {
     val night = Color(0xFF080B14)
