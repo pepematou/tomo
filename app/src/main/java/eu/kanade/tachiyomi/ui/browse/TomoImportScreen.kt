@@ -193,3 +193,18 @@ private fun TextImporter.Reason.message() = when (this) {
     TextImporter.Reason.INVALID_LINK -> MR.strings.tomo_import_error_link
     TextImporter.Reason.NETWORK -> MR.strings.tomo_import_error_network
 }
+
+/** Opens the ficha of the AO3 work in a shared link (RF-30c): from there it can be read or followed. */
+class Ao3WorkScreen(private val workId: Long) : Screen() {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
+        LaunchedEffect(workId) {
+            val mangaId = context.appGraph.followFanfic.openAo3Work(workId)
+            navigator.replace(MangaScreen(mangaId, fromSource = true))
+        }
+        tachiyomi.presentation.core.screens.LoadingScreen()
+    }
+}

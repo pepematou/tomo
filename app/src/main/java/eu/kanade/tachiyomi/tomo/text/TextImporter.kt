@@ -5,7 +5,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import com.hippo.unifile.UniFile
 import dev.zacsweers.metro.Inject
-import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
@@ -35,8 +34,7 @@ class TextImporter(
     private val networkHelper: NetworkHelper,
     private val networkToLocalManga: NetworkToLocalManga,
     private val updateMangaFromRemote: UpdateMangaFromRemote,
-    private val updateManga: UpdateManga,
-    private val textWorks: TextWorks,
+    private val followFanfic: FollowFanfic,
 ) {
     class ImportException(val reason: Reason) : Exception(reason.name)
 
@@ -134,8 +132,7 @@ class TextImporter(
 
         val manga = networkToLocalManga(Manga.create().copy(url = folderName, title = title, source = LocalSource.ID))
         updateMangaFromRemote(manga, fetchDetails = true, fetchChapters = true)
-        updateManga.awaitUpdateFavorite(manga.id, true)
-        textWorks.add(manga.id, TextWorks.TextWork(ao3WorkId = ao3WorkId))
+        followFanfic.follow(manga, ao3WorkId)
         return Imported(manga.id, title)
     }
 

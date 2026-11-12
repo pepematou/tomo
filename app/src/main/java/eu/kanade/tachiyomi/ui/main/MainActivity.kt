@@ -85,7 +85,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.tomo.text.ao3WorkId
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
-import eu.kanade.tachiyomi.ui.browse.TomoImportScreen
+import eu.kanade.tachiyomi.ui.browse.Ao3WorkScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
@@ -625,9 +625,10 @@ class MainActivity : BaseActivity() {
                 // Get the search query provided in extras, and if not null, perform a global search with it.
                 val query = intent.getStringExtra(SearchManager.QUERY) ?: intent.getStringExtra(Intent.EXTRA_TEXT)
                 // Tomo: a shared Archive of Our Own link imports the work instead of searching for it
-                if (query != null && ao3WorkId(query) != null) {
+                val workId = query?.let(::ao3WorkId)
+                if (workId != null) {
                     navigator.popUntilRoot()
-                    navigator.push(TomoImportScreen(link = query))
+                    navigator.push(Ao3WorkScreen(workId))
                 } else if (!query.isNullOrEmpty()) {
                     navigator.popUntilRoot()
                     navigator.push(DeepLinkScreen(query))

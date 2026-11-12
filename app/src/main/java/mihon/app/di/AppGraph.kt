@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstallActivity
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
+import eu.kanade.tachiyomi.tomo.text.FollowFanfic
 import eu.kanade.tachiyomi.tomo.text.TextImporter
 import eu.kanade.tachiyomi.tomo.text.TextReaderPreferences
 import eu.kanade.tachiyomi.tomo.text.TextWorks
@@ -106,6 +107,7 @@ interface AppGraph : ViewModelGraph {
     val textWorks: TextWorks
     val textImporter: TextImporter
     val textReaderPreferences: TextReaderPreferences
+    val followFanfic: FollowFanfic
 
     val updateChecker: AppUpdateChecker
 
