@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.automirroredrounded.Help
@@ -43,6 +44,23 @@ fun MoreScreen(
 ) {
     val uriHandler = LocalUriHandler.current
 
+    if (LocalGlassTheme.current) {
+        TomoMoreContent(
+            downloadQueueSummary = downloadQueueSummary(downloadQueueStateProvider()),
+            downloadedOnly = downloadedOnly,
+            onDownloadedOnlyChange = onDownloadedOnlyChange,
+            incognitoMode = incognitoMode,
+            onIncognitoModeChange = onIncognitoModeChange,
+            onClickDownloadQueue = onClickDownloadQueue,
+            onClickCategories = onClickCategories,
+            onClickStats = onClickStats,
+            onClickDataAndStorage = onClickDataAndStorage,
+            onClickSettings = onClickSettings,
+            onClickAbout = onClickAbout,
+        )
+        return
+    }
+
     Scaffold { contentPadding ->
         ScrollbarLazyColumn(contentPadding = contentPadding) {
             item {
@@ -75,27 +93,7 @@ fun MoreScreen(
                 val downloadQueueState = downloadQueueStateProvider()
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.label_download_queue),
-                    subtitle = when (downloadQueueState) {
-                        DownloadQueueState.Stopped -> null
-                        is DownloadQueueState.Paused -> {
-                            val pending = downloadQueueState.pending
-                            if (pending == 0) {
-                                stringResource(MR.strings.paused)
-                            } else {
-                                "${stringResource(MR.strings.paused)} • ${
-                                    pluralStringResource(
-                                        MR.plurals.download_queue_summary,
-                                        count = pending,
-                                        pending,
-                                    )
-                                }"
-                            }
-                        }
-                        is DownloadQueueState.Downloading -> {
-                            val pending = downloadQueueState.pending
-                            pluralStringResource(MR.plurals.download_queue_summary, count = pending, pending)
-                        }
-                    },
+                    subtitle = downloadQueueSummary(downloadQueueState),
                     icon = MaterialSymbols.Rounded.Download,
                     onPreferenceClick = onClickDownloadQueue,
                 )
@@ -153,5 +151,28 @@ fun MoreScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun downloadQueueSummary(state: DownloadQueueState): String? = when (state) {
+    DownloadQueueState.Stopped -> null
+    is DownloadQueueState.Paused -> {
+        val pending = state.pending
+        if (pending == 0) {
+            stringResource(MR.strings.paused)
+        } else {
+            "${stringResource(MR.strings.paused)} • ${
+                pluralStringResource(
+                    MR.plurals.download_queue_summary,
+                    count = pending,
+                    pending,
+                )
+            }"
+        }
+    }
+    is DownloadQueueState.Downloading -> {
+        val pending = state.pending
+        pluralStringResource(MR.plurals.download_queue_summary, count = pending, pending)
     }
 }

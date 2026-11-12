@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +23,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
+import eu.kanade.presentation.tomo.LocalGlassTheme
+import eu.kanade.presentation.tomo.Tomo
+import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.util.lang.toTimestampString
 import mihon.icons.materialsymbols.MaterialSymbols
@@ -48,6 +52,16 @@ fun HistoryItem(
 ) {
     Row(
         modifier = modifier
+            .then(
+                // Tomo: each entry is a glass card
+                if (LocalGlassTheme.current) {
+                    Modifier
+                        .padding(horizontal = MaterialTheme.padding.medium, vertical = 4.dp)
+                        .glass(RoundedCornerShape(20.dp))
+                } else {
+                    Modifier
+                },
+            )
             .clickable(onClick = onClickResume)
             .height(HistoryItemHeight)
             .padding(horizontal = MaterialTheme.padding.medium, vertical = MaterialTheme.padding.small),
@@ -103,7 +117,7 @@ fun HistoryItem(
             Icon(
                 imageVector = MaterialSymbols.Rounded.Delete,
                 contentDescription = stringResource(MR.strings.action_delete),
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = if (LocalGlassTheme.current) Tomo.textFaint else MaterialTheme.colorScheme.onSurface,
             )
         }
     }
