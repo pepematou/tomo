@@ -15,18 +15,20 @@ class TextReaderPreferences(preferenceStore: PreferenceStore) {
 
     val fontSize = preferenceStore.getInt("tomo_text_font_size", 18)
 
-    /** Line height as a multiple of the font size, in tenths: 16 is 1.6. */
-    val lineHeight = preferenceStore.getInt("tomo_text_line_height", 16)
+    val spacing = preferenceStore.getEnum("tomo_text_spacing", Spacing.NORMAL)
 
-    val margin = preferenceStore.getInt("tomo_text_margin", 20)
+    val margin = preferenceStore.getInt("tomo_text_margin", 28)
 
     val justify = preferenceStore.getBoolean("tomo_text_justify", false)
 
     val theme = preferenceStore.getEnum("tomo_text_theme", Theme.DARK)
 
-    val paged = preferenceStore.getBoolean("tomo_text_paged", false)
+    val paged = preferenceStore.getBoolean("tomo_text_paged", true)
 
+    /** SERIF is Literata, the book face of the design. */
     enum class Font { SERIF, SANS, MONO }
+
+    enum class Spacing(val lineHeight: Float) { COMPACT(1.45f), NORMAL(1.62f), WIDE(1.85f) }
 
     enum class Theme { LIGHT, SEPIA, DARK, BLACK }
 }

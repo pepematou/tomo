@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import eu.kanade.presentation.reader.text.TextReaderContent
@@ -37,16 +38,24 @@ class TextReaderActivity : BaseActivity() {
                 is TextReaderViewModel.State.Error -> TomoBackground {
                     EmptyScreen(message = current.message.orEmpty(), modifier = Modifier.fillMaxSize())
                 }
-                is TextReaderViewModel.State.Ready -> TextReaderContent(
-                    title = current.title,
-                    chapterName = current.chapterName,
-                    blocks = current.blocks,
-                    startIndex = current.startIndex,
-                    preferences = preferences,
-                    onPosition = viewModel::onPosition,
-                    onLeave = viewModel::flush,
-                    onBack = ::finish,
-                )
+                is TextReaderViewModel.State.Ready -> key(current.chapter.id) {
+                    TextReaderContent(
+                        title = current.title,
+                        chapter = current.chapter,
+                        chapterIndex = current.chapterIndex,
+                        chapters = current.chapters,
+                        blocks = current.blocks,
+                        startIndex = current.startIndex,
+                        bookmarked = current.bookmarked,
+                        preferences = preferences,
+                        onPosition = viewModel::onPosition,
+                        onLeave = viewModel::flush,
+                        onMove = viewModel::move,
+                        onOpenChapter = viewModel::open,
+                        onToggleBookmark = viewModel::toggleBookmark,
+                        onBack = ::finish,
+                    )
+                }
             }
         }
     }

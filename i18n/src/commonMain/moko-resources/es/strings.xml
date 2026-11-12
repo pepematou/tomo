@@ -1101,4 +1101,24 @@
     <string name="tomo_rating_none">Sin clasificar</string>
     <string name="tomo_warning_not_given">Advertencias sin indicar</string>
     <string name="tomo_thousands">%1$d mil</string>
+    <string name="tomo_text_chapter_of">Cap. %1$d de %2$d</string>
+    <string name="tomo_text_chapter_label">Capítulo %1$s</string>
+    <string name="tomo_text_progress">%1$d %% del capítulo · unos %2$d min para terminarlo</string>
+    <string name="tomo_text_progress_done">%1$d %% del capítulo</string>
+    <string name="tomo_text_previous">Anterior</string>
+    <string name="tomo_text_next">Siguiente</string>
+    <string name="tomo_text_notes">Notas del autor</string>
+    <string name="tomo_text_notes_folded">plegadas</string>
+    <string name="tomo_text_notes_hint">Toca para leerlas. Tomo las pliega para que no interrumpan.</string>
+    <string name="tomo_text_theme_light">Claro</string>
+    <string name="tomo_text_theme_sepia">Sepia</string>
+    <string name="tomo_text_theme_dark">Oscuro</string>
+    <string name="tomo_text_theme_black">Negro</string>
+    <string name="tomo_text_spacing_compact">Compacto</string>
+    <string name="tomo_text_spacing_normal">Normal</string>
+    <string name="tomo_text_spacing_wide">Amplio</string>
+    <string name="tomo_text_mode">Modo</string>
+    <string name="tomo_text_mode_paged">Paginado</string>
+    <string name="tomo_text_mode_scroll">Continuo</string>
+    <string name="tomo_text_font">Letra</string>
 </resources>

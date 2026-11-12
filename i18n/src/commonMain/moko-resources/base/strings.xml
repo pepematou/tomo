@@ -1303,4 +1303,24 @@
     <string name="tomo_rating_none">Not rated</string>
     <string name="tomo_warning_not_given">Warnings not given</string>
     <string name="tomo_thousands">%1$dk</string>
+    <string name="tomo_text_chapter_of">Ch. %1$d of %2$d</string>
+    <string name="tomo_text_chapter_label">Chapter %1$s</string>
+    <string name="tomo_text_progress">%1$d%% of the chapter · about %2$d min to finish it</string>
+    <string name="tomo_text_progress_done">%1$d%% of the chapter</string>
+    <string name="tomo_text_previous">Previous</string>
+    <string name="tomo_text_next">Next</string>
+    <string name="tomo_text_notes">Author’s notes</string>
+    <string name="tomo_text_notes_folded">folded</string>
+    <string name="tomo_text_notes_hint">Tap to read them. Tomo folds them so they don’t interrupt.</string>
+    <string name="tomo_text_theme_light">Light</string>
+    <string name="tomo_text_theme_sepia">Sepia</string>
+    <string name="tomo_text_theme_dark">Dark</string>
+    <string name="tomo_text_theme_black">Black</string>
+    <string name="tomo_text_spacing_compact">Compact</string>
+    <string name="tomo_text_spacing_normal">Normal</string>
+    <string name="tomo_text_spacing_wide">Wide</string>
+    <string name="tomo_text_mode">Mode</string>
+    <string name="tomo_text_mode_paged">Paged</string>
+    <string name="tomo_text_mode_scroll">Continuous</string>
+    <string name="tomo_text_font">Typeface</string>
 </resources>

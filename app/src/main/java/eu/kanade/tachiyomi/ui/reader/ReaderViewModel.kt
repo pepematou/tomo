@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.data.saver.Location
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.tomo.ChapterLengths
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
 import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
@@ -102,6 +103,7 @@ import kotlin.time.Instant
  */
 @AssistedInject
 class ReaderViewModel(
+    private val chapterLengths: ChapterLengths,
     @Assisted private val savedState: SavedStateHandle,
     @AppCoroutineScope private val appScope: CoroutineScope,
     private val context: Context,
@@ -538,6 +540,8 @@ class ReaderViewModel(
 
         val selectedChapter = page.chapter
         val pages = selectedChapter.pages ?: return
+        // Tomo: remembers the page count so Home can show "página 36 de 52"
+        selectedChapter.chapter.id?.let { chapterLengths.put(it, pages.size) }
 
         // Save last page read and mark as read if needed
         updateChapterProgress(selectedChapter, page)
