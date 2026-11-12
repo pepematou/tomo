@@ -43,6 +43,9 @@ class UiPreferences(
 
     val startOnLibrary: Preference<Boolean> = preferenceStore.getBoolean("tomo_start_on_library", false)
 
+    /** Tomo: Discover opens on fanfics instead of manga, as the user last left it (RF-30e). */
+    val discoverFanfics = preferenceStore.getBoolean("tomo_discover_fanfics", false)
+
     companion object {
         fun dateFormat(format: String, locale: Locale): DateTimeFormatter = when (format) {
             "" -> DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(locale)

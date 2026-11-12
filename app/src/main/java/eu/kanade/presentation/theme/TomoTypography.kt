@@ -4,6 +4,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -15,6 +16,13 @@ internal val Onest = FontFamily(
     Font(R.font.onest_medium, FontWeight.Medium),
     Font(R.font.onest_semibold, FontWeight.SemiBold),
     Font(R.font.onest_bold, FontWeight.Bold),
+)
+
+/** Book face of fanfic titles and the text reader. */
+val Literata = FontFamily(
+    Font(R.font.literata_regular, FontWeight.Normal),
+    Font(R.font.literata_semibold, FontWeight.SemiBold),
+    Font(R.font.literata_italic, FontWeight.Normal, FontStyle.Italic),
 )
 
 private fun TextStyle.onest() = copy(fontFamily = Onest)

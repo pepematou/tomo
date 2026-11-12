@@ -1061,4 +1061,24 @@
     <string name="tomo_type_manhwa">Manhwa</string>
     <string name="tomo_type_text">Texto</string>
     <string name="tomo_chapter_paragraph">Cap. %1$s, párrafo %2$d</string>
+    <string name="tomo_fanfics">Fanfics</string>
+    <string name="tomo_discover_manga">Manga y manhwa</string>
+    <string name="tomo_spanish_only">Solo español</string>
+    <string name="tomo_fanfic_complete">Completados</string>
+    <string name="tomo_fanfic_in_progress">En curso</string>
+    <string name="tomo_fanfic_short">Menos de 10 mil palabras</string>
+    <string name="tomo_fanfic_no_warnings">Sin advertencias</string>
+    <string name="tomo_fanfic_by_fandom">Explora por fandom</string>
+    <string name="tomo_fanfic_sort_updated">Actualizados recientemente</string>
+    <string name="tomo_fanfic_sort_kudos">Más kudos</string>
+    <string name="tomo_fanfic_sort_words">Más largos</string>
+    <string name="tomo_fanfic_sort_hits">Más leídos</string>
+    <string name="tomo_fanfic_search_hint">Título, autor, pareja o etiqueta</string>
+    <string name="tomo_fanfic_by">por %1$s</string>
+    <string name="tomo_fanfic_follow">Seguir</string>
+    <string name="tomo_fanfic_following">Siguiendo</string>
+    <string name="tomo_fanfic_words">%1$s palabras</string>
+    <string name="tomo_fanfic_chapters">%1$d de %2$s cap.</string>
+    <string name="tomo_fanfic_status_complete">Completo</string>
+    <string name="tomo_fanfic_status_wip">En curso</string>
 </resources>
