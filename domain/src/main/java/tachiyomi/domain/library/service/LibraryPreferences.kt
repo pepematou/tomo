@@ -132,6 +132,9 @@ class LibraryPreferences(
 
     val categoryTabs: Preference<Boolean> = preferenceStore.getBoolean("display_category_tabs", true)
 
+    /** Tomo: shows the library as shelves of spines instead of a grid of covers. */
+    val tomoShelfView: Preference<Boolean> = preferenceStore.getBoolean("tomo_library_shelf_view", false)
+
     val categoryNumberOfItems: Preference<Boolean> = preferenceStore.getBoolean("display_number_of_items", false)
 
     val categorizedDisplaySettings: Preference<Boolean> = preferenceStore.getBoolean("categorized_display", false)

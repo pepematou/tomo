@@ -33,6 +33,7 @@ import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.TomoLibrarySettingsSheet
+import eu.kanade.presentation.library.TomoShelfContent
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryGlassHeader
 import eu.kanade.presentation.library.components.LibraryToolbar
@@ -43,6 +44,7 @@ import eu.kanade.presentation.tomo.tomoBackground
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateWorker
+import eu.kanade.tachiyomi.data.library.sourceDownIds
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -52,6 +54,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.workManager
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import mihon.app.di.appGraph
@@ -116,7 +119,12 @@ data object LibraryTab : Tab {
         }
 
         val glass = LocalGlassTheme.current
-        val lastUpdated by context.appGraph.libraryPreferences.lastUpdatedTimestamp.collectAsState()
+        val libraryPreferences = remember { context.appGraph.libraryPreferences }
+        val lastUpdated by libraryPreferences.lastUpdatedTimestamp.collectAsState()
+        val shelfView by libraryPreferences.tomoShelfView.collectAsState()
+        val sourceDownIds by remember {
+            context.appGraph.libraryUpdateIssues.issues.map { it.sourceDownIds() }
+        }.collectAsState(emptySet())
 
         Scaffold(
             modifier = if (glass) Modifier.tomoBackground() else Modifier,
@@ -129,6 +137,8 @@ data object LibraryTab : Tab {
                         hasActiveFilters = state.hasActiveFilters,
                         onClickSearch = { viewModel.search("") },
                         onClickFilter = viewModel::showSettingsDialog,
+                        shelfView = shelfView,
+                        onShelfViewChange = libraryPreferences.tomoShelfView::set,
                     )
                     return@Scaffold
                 }
@@ -199,6 +209,32 @@ data object LibraryTab : Tab {
                                 onClick = { handler.openUri(GETTING_STARTED_URL) },
                             ),
                         ),
+                    )
+                }
+                glass && shelfView && !state.selectionMode && state.searchQuery.isNullOrEmpty() -> {
+                    TomoShelfContent(
+                        categories = state.displayedCategories,
+                        itemsFor = state::getItemsForCategory,
+                        sourceDownIds = sourceDownIds,
+                        contentPadding = contentPadding,
+                        onSeeAll = { index ->
+                            viewModel.updateActiveCategoryIndex(index)
+                            libraryPreferences.tomoShelfView.set(false)
+                        },
+                        onOpenManga = { navigator.push(MangaScreen(it)) },
+                        onContinueReading = { item ->
+                            scope.launch {
+                                val chapter = viewModel.getNextUnreadChapter(item.libraryManga.manga)
+                                if (chapter != null) {
+                                    context.startActivity(
+                                        ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
+                                    )
+                                } else {
+                                    snackbarHostState.showSnackbar(context.stringResource(MR.strings.no_next_chapter))
+                                }
+                            }
+                        },
+                        onCreateCategory = { navigator.push(CategoryScreen()) },
                     )
                 }
                 else -> {

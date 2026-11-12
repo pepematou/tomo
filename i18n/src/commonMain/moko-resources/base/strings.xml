@@ -1213,4 +1213,12 @@
     <string name="tomo_also_reading">You were also reading</string>
     <string name="tomo_action_keep_reading_short">Continue</string>
     <string name="tomo_see_all_count">See all %1$d</string>
+    <string name="tomo_shelf">Shelf</string>
+    <string name="tomo_covers">Covers</string>
+    <string name="tomo_shelf_hint">Tap a spine to take the book out</string>
+    <string name="tomo_shelf_new_category">Every category you create shows up as a new shelf.</string>
+    <string name="tomo_create_category">Create category</string>
+    <string name="tomo_shelf_source_down">Source down</string>
+    <string name="tomo_shelf_read_of">%1$d of %2$d read</string>
+    <string name="tomo_see_series">See series</string>
 </resources>

@@ -1011,4 +1011,12 @@
     <string name="tomo_also_reading">También leías</string>
     <string name="tomo_action_keep_reading_short">Seguir</string>
     <string name="tomo_see_all_count">Ver las %1$d</string>
+    <string name="tomo_shelf">Estante</string>
+    <string name="tomo_covers">Portadas</string>
+    <string name="tomo_shelf_hint">Toca un lomo para sacar el libro</string>
+    <string name="tomo_shelf_new_category">Cada categoría que crees aparece como un estante nuevo.</string>
+    <string name="tomo_create_category">Crear categoría</string>
+    <string name="tomo_shelf_source_down">Fuente caída</string>
+    <string name="tomo_shelf_read_of">%1$d de %2$d leídos</string>
+    <string name="tomo_see_series">Ver ficha</string>
 </resources>
