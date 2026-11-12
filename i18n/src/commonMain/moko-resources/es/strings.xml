@@ -49,6 +49,7 @@
     <string name="pref_library_update_interval">Actualizaciones automáticas</string>
     <string name="update_never">No</string>
     <string name="update_6hour">Cada 6 horas</string>
+    <string name="update_6hour">Cada 6 horas</string>
     <string name="update_12hour">Cada 12 horas</string>
     <string name="update_24hour">Diarias</string>
     <string name="update_48hour">Cada 2 días</string>
