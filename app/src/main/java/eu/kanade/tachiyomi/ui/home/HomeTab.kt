@@ -60,12 +60,8 @@ data object HomeTab : Tab {
             snackbarHostState = snackbarHostState,
             onContinue = { history ->
                 scope.launch {
-                    val chapter = viewModel.chapterToContinue(history)
-                    if (chapter != null) {
-                        context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
-                    } else {
-                        snackbarHostState.showSnackbar(context.stringResource(MR.strings.no_next_chapter))
-                    }
+                    val (mangaId, chapterId) = viewModel.chapterToContinue(history)
+                    context.startActivity(ReaderActivity.newIntent(context, mangaId, chapterId))
                 }
             },
             onClickManga = { navigator.push(MangaScreen(it)) },

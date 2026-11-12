@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.stateIn
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
-import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.history.interactor.GetHistory
 import tachiyomi.domain.history.interactor.GetNextChapters
 import tachiyomi.domain.history.model.HistoryWithRelations
@@ -56,9 +55,14 @@ class HomeViewModel(
         .catch { logcat(LogPriority.ERROR, it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), State())
 
-    /** The chapter "Continue" opens: the same one if unfinished, otherwise the next. */
-    suspend fun chapterToContinue(history: HistoryWithRelations): Chapter? =
-        getNextChapters.await(history.mangaId, history.chapterId, onlyUnread = false).firstOrNull()
+    /**
+     * The (manga id, chapter id) "Continue" opens: the same chapter if unfinished, otherwise the next one, and the
+     * last one read when the series has no next chapter, rather than a "not found" message.
+     */
+    suspend fun chapterToContinue(history: HistoryWithRelations): Pair<Long, Long> {
+        val next = getNextChapters.await(history.mangaId, history.chapterId, onlyUnread = false).firstOrNull()
+        return next?.let { it.mangaId to it.id } ?: (history.mangaId to history.chapterId)
+    }
 
     private suspend fun readingProgress(history: HistoryWithRelations): ReadingProgress {
         val chapters = getChaptersByMangaId.await(history.mangaId)
