@@ -906,4 +906,8 @@
     <string name="tomo_see_all">Ver todo</string>
     <string name="tomo_home_empty">Tu biblioteca está vacía. Importa un respaldo o busca una serie en Descubrir.</string>
     <string name="tomo_theme_glass">Cristal oscuro</string>
+    <string name="tomo_issue_extension_missing">Extensión no instalada</string>
+    <string name="tomo_issue_site_gone">El sitio cambió de dirección o ya no existe. Migra la serie a otra fuente.</string>
+    <string name="tomo_issue_migrate_all">Migrar todas</string>
+    <string name="tomo_issue_go_to_extensions">Ir a extensiones</string>
 </resources>

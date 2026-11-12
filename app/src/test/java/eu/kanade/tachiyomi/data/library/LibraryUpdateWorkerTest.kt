@@ -14,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.source.model.SourceNotInstalledException
 import tachiyomi.i18n.MR
 import java.io.File
 import kotlin.time.Duration
@@ -79,6 +80,18 @@ class LibraryUpdateWorkerTest {
             }
         }
         calls shouldBe 1
+    }
+
+    @Test
+    fun `each failure points to the action that fixes it`() {
+        issueAction(SourceNotInstalledException(), isCloudflare = false) shouldBe
+            LibraryUpdateIssues.Action.INSTALL_EXTENSION
+        listOf(301, 404, 410).forEach {
+            issueAction(HttpException(it), isCloudflare = false) shouldBe LibraryUpdateIssues.Action.MIGRATE
+        }
+        issueAction(Exception("HTTP error 404"), isCloudflare = false) shouldBe LibraryUpdateIssues.Action.MIGRATE
+        issueAction(HttpException(500), isCloudflare = false) shouldBe LibraryUpdateIssues.Action.NONE
+        issueAction(Exception("blocked"), isCloudflare = true) shouldBe LibraryUpdateIssues.Action.WEBVIEW
     }
 
     @Test

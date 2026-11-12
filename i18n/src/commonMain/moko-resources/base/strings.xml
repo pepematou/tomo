@@ -1108,4 +1108,8 @@
     <string name="tomo_see_all">See all</string>
     <string name="tomo_home_empty">Your library is empty. Import a backup or find a series in Discover.</string>
     <string name="tomo_theme_glass">Dark glass</string>
+    <string name="tomo_issue_extension_missing">Extension not installed</string>
+    <string name="tomo_issue_site_gone">The site moved or no longer exists. Migrate the series to another source.</string>
+    <string name="tomo_issue_migrate_all">Migrate all</string>
+    <string name="tomo_issue_go_to_extensions">Go to extensions</string>
 </resources>

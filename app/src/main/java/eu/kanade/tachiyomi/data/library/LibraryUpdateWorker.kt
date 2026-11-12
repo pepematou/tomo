@@ -108,6 +108,20 @@ internal fun skipReason(
     else -> null
 }
 
+// Moved permanently, not found, gone: the series has to move to another source
+private val siteGoneCodes = setOf(301, 404, 410)
+private val siteGoneMessage = Regex("HTTP error (301|404|410)")
+
+/** What the user can do about an update that failed with [error]. */
+internal fun issueAction(error: Throwable, isCloudflare: Boolean): LibraryUpdateIssues.Action = when {
+    isCloudflare -> LibraryUpdateIssues.Action.WEBVIEW
+    error is SourceNotInstalledException -> LibraryUpdateIssues.Action.INSTALL_EXTENSION
+    error is HttpException && error.code in siteGoneCodes -> LibraryUpdateIssues.Action.MIGRATE
+    // Older extensions throw a plain exception with the same message
+    error.message?.let(siteGoneMessage::containsMatchIn) == true -> LibraryUpdateIssues.Action.MIGRATE
+    else -> LibraryUpdateIssues.Action.NONE
+}
+
 /** Runs [block], retrying after each of [delays] while the source answers 429 or a 5xx error. */
 internal suspend fun <T> retryWhenSourceBusy(
     delays: List<Duration> = listOf(2.seconds, 4.seconds, 8.seconds),
@@ -388,13 +402,22 @@ class LibraryUpdateWorker(private val context: Context, workerParams: WorkerPara
         } else {
             null
         }
+        val action = issueAction(error, isCloudflare)
+        val reason = when (action) {
+            LibraryUpdateIssues.Action.INSTALL_EXTENSION -> context.stringResource(
+                MR.strings.tomo_issue_extension_missing,
+            )
+            LibraryUpdateIssues.Action.MIGRATE -> context.stringResource(MR.strings.tomo_issue_site_gone)
+            else -> message ?: error::class.simpleName.orEmpty()
+        }
         return LibraryUpdateIssues.Issue(
             mangaId = manga.id,
             title = manga.title,
             kind = LibraryUpdateIssues.Kind.ERROR,
-            reason = message ?: error::class.simpleName.orEmpty(),
+            reason = reason,
             webViewUrl = url,
             sourceId = manga.source,
+            action = action,
         )
     }
 

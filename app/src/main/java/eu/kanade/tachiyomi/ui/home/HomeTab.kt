@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.ui.updates.UpdatesTab
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.workManager
 import kotlinx.coroutines.launch
+import mihon.feature.migration.config.MigrationConfigScreen
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.Home
 import tachiyomi.core.common.i18n.stringResource
@@ -93,6 +94,14 @@ data object HomeTab : Tab {
                     issue.webViewUrl?.let { url ->
                         context.startActivity(WebViewActivity.newIntent(context, url, issue.sourceId, issue.title))
                     }
+                },
+                onMigrate = {
+                    showIssues = false
+                    navigator.push(MigrationConfigScreen(it))
+                },
+                onGoToExtensions = {
+                    showIssues = false
+                    scope.launch { HomeScreen.openTab(HomeScreen.Tab.Browse(toExtensions = true)) }
                 },
             )
         }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -29,6 +30,8 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.updates.UpdatesViewModel.Event
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import mihon.feature.migration.config.MigrationConfigScreen
 import mihon.feature.upcoming.UpcomingScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
@@ -56,6 +59,7 @@ data object UpdatesTab : Tab {
     override fun Content() {
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
         val viewModel = metroViewModel<UpdatesViewModel>()
         val settingsViewModel = metroViewModel<UpdatesSettingsViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
@@ -112,6 +116,15 @@ data object UpdatesTab : Tab {
                         issue.webViewUrl?.let { url ->
                             context.startActivity(WebViewActivity.newIntent(context, url, issue.sourceId, issue.title))
                         }
+                    },
+                    onMigrate = {
+                        onDismissDialog()
+                        navigator.push(MigrationConfigScreen(it))
+                    },
+                    onGoToExtensions = {
+                        onDismissDialog()
+                        navigator.popUntilRoot()
+                        scope.launch { HomeScreen.openTab(HomeScreen.Tab.Browse(toExtensions = true)) }
                     },
                 )
             }

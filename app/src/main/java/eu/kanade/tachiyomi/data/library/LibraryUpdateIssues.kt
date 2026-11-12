@@ -53,7 +53,11 @@ class LibraryUpdateIssues(
         /** Set when the source asked for a Cloudflare check that only WebView can pass. */
         val webViewUrl: String? = null,
         val sourceId: Long = 0,
+        val action: Action = Action.NONE,
     )
 
     enum class Kind { SKIPPED, ERROR }
+
+    /** What the user can do to fix the issue. */
+    enum class Action { NONE, INSTALL_EXTENSION, MIGRATE, WEBVIEW }
 }
