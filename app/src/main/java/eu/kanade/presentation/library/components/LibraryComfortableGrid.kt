@@ -48,6 +48,7 @@ internal fun LibraryComfortableGrid(
                     UnreadBadge(count = libraryItem.badges.unreadCount)
                 },
                 coverBadgeEnd = {
+                    UpdateIssueBadge(mangaId = manga.id)
                     LanguageBadge(
                         isLocal = libraryItem.badges.isLocal,
                         sourceLanguage = libraryItem.badges.sourceLanguage,

@@ -118,4 +118,8 @@
         <item quantity="one">%1$d series needs your attention</item>
         <item quantity="other">%1$d series need your attention</item>
     </plurals>
+    <plurals name="tomo_library_count">
+        <item quantity="one">%1$d series</item>
+        <item quantity="other">%1$d series</item>
+    </plurals>
 </resources>

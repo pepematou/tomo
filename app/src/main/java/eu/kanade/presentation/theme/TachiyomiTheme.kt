@@ -6,6 +6,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import eu.kanade.domain.ui.model.AppTheme
@@ -26,6 +27,7 @@ import eu.kanade.presentation.theme.colorscheme.TokyoNightColorScheme
 import eu.kanade.presentation.theme.colorscheme.TomoColorScheme
 import eu.kanade.presentation.theme.colorscheme.YinYangColorScheme
 import eu.kanade.presentation.theme.colorscheme.YotsubaColorScheme
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import mihon.app.di.appGraph
 
 @Composable
@@ -68,8 +70,9 @@ private fun BaseTachiyomiTheme(
             )
         },
         typography = if (appTheme == AppTheme.TOMO) TomoTypography else MaterialTheme.typography,
-        content = content,
-    )
+    ) {
+        CompositionLocalProvider(LocalGlassTheme provides (appTheme == AppTheme.TOMO), content = content)
+    }
 }
 
 private fun getThemeColorScheme(

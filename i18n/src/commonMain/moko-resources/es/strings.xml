@@ -919,4 +919,5 @@
     <string name="tomo_issues_detail">Omitidas: %1$d · Con error: %2$d</string>
     <string name="tomo_action_keep_reading">Seguir leyendo</string>
     <string name="tomo_action_see">Ver</string>
+    <string name="tomo_library_updated">Actualizado %1$s. Desliza para actualizar.</string>
 </resources>

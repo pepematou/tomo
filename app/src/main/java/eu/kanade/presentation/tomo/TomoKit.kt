@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +46,12 @@ import eu.kanade.presentation.manga.components.MangaCover
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.automirroredrounded.ArrowBack
 import tachiyomi.domain.manga.model.MangaCover as MangaCoverData
+
+/** Whether the dark glass theme is active, so shared Mihon screens can switch to Tomo's look. */
+val LocalGlassTheme = staticCompositionLocalOf { false }
+
+/** Series ids that the last library update skipped or failed on, for the warning badge on covers. */
+val LocalUpdateIssueIds = staticCompositionLocalOf { emptySet<Long>() }
 
 /** Tokens of Tomo's dark glass design (plan-tomo.md §6). */
 object Tomo {
@@ -73,31 +81,21 @@ fun TomoBackground(
     sideGlow: Color = Tomo.glowViolet,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .drawBehind {
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(topGlow.copy(alpha = 0.55f), Color.Transparent),
-                        center = Offset(size.width * 0.15f, size.height * 0.05f),
-                        radius = size.width * 0.95f,
-                    ),
-                    radius = size.width * 0.95f,
-                    center = Offset(size.width * 0.15f, size.height * 0.05f),
-                )
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(sideGlow.copy(alpha = 0.45f), Color.Transparent),
-                        center = Offset(size.width * 1.0f, size.height * 0.35f),
-                        radius = size.width * 0.85f,
-                    ),
-                    radius = size.width * 0.85f,
-                    center = Offset(size.width * 1.0f, size.height * 0.35f),
-                )
-            },
-        content = content,
+    Box(modifier = modifier.fillMaxSize().tomoBackground(topGlow, sideGlow), content = content)
+}
+
+/** The glass background as a modifier, for screens that keep their own Scaffold. */
+fun Modifier.tomoBackground(topGlow: Color = Tomo.glowBlue, sideGlow: Color = Tomo.glowViolet): Modifier =
+    background(Tomo.night).drawBehind {
+        drawGlow(topGlow.copy(alpha = 0.55f), Offset(size.width * 0.15f, size.height * 0.05f), size.width * 0.95f)
+        drawGlow(sideGlow.copy(alpha = 0.45f), Offset(size.width * 1.0f, size.height * 0.35f), size.width * 0.85f)
+    }
+
+private fun DrawScope.drawGlow(color: Color, center: Offset, radius: Float) {
+    drawCircle(
+        brush = Brush.radialGradient(listOf(color, Color.Transparent), center = center, radius = radius),
+        radius = radius,
+        center = center,
     )
 }
 
@@ -147,6 +145,7 @@ fun GlassIconButton(
     contentDescription: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    tint: Color = Tomo.text,
 ) {
     IconButton(
         onClick = onClick,
@@ -156,7 +155,7 @@ fun GlassIconButton(
             .background(Tomo.glassStrong)
             .border(1.dp, Tomo.glassBorder, CircleShape),
     ) {
-        Icon(imageVector = icon, contentDescription = contentDescription, tint = Tomo.text)
+        Icon(imageVector = icon, contentDescription = contentDescription, tint = tint)
     }
 }
 

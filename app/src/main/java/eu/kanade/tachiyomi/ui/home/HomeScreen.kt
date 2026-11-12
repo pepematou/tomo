@@ -22,6 +22,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -43,6 +44,7 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import eu.kanade.domain.ui.model.AppTheme
+import eu.kanade.presentation.tomo.LocalUpdateIssueIds
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.ui.browse.BrowseTab
@@ -55,6 +57,7 @@ import eu.kanade.tachiyomi.ui.updates.UpdatesTab
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import mihon.app.di.appGraph
@@ -117,23 +120,12 @@ object HomeScreen : Screen() {
                     }
                 }
 
+                val issueIds by remember {
+                    context.appGraph.libraryUpdateIssues.issues.map { all -> all.mapTo(HashSet()) { it.mangaId } }
+                }.collectAsState(emptySet())
                 val tabContent: @Composable () -> Unit = {
-                    AnimatedContent(
-                        targetState = tabNavigator.current,
-                        transitionSpec = {
-                            materialFadeThroughIn(
-                                initialScale = 1f,
-                                durationMillis = TabFadeDuration,
-                            ) togetherWith materialFadeThroughOut(durationMillis = TabFadeDuration)
-                        },
-                        label = "tabContent",
-                    ) {
-                        tabNavigator.saveableState(key = "currentTab", it) {
-                            it.Content()
-                        }
-                    }
+                    CompositionLocalProvider(LocalUpdateIssueIds provides issueIds) { TabsContent(tabNavigator) }
                 }
-
                 NavigationSuiteScaffold(
                     navigationSuiteType = if (glassBar) NavigationSuiteType.None else navigationSuiteType,
                     state = navigationSuiteState,
@@ -215,6 +207,24 @@ object HomeScreen : Screen() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun TabsContent(tabNavigator: TabNavigator) {
+        AnimatedContent(
+            targetState = tabNavigator.current,
+            transitionSpec = {
+                materialFadeThroughIn(
+                    initialScale = 1f,
+                    durationMillis = TabFadeDuration,
+                ) togetherWith materialFadeThroughOut(durationMillis = TabFadeDuration)
+            },
+            label = "tabContent",
+        ) {
+            tabNavigator.saveableState(key = "currentTab", it) {
+                it.Content()
             }
         }
     }

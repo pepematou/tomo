@@ -19,7 +19,9 @@ sealed interface LibraryDisplayMode {
 
     companion object {
         val values by lazy { setOf(CompactGrid, ComfortableGrid, List, CoverOnlyGrid) }
-        val default = CompactGrid
+
+        // Tomo shows titles under the covers, as in its design
+        val default = ComfortableGrid
 
         fun deserialize(serialized: String): LibraryDisplayMode {
             return when (serialized) {
