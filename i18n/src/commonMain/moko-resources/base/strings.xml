@@ -1097,4 +1097,14 @@
     <string name="donationCampaign.paragraph3">Regardless, Mihon will continue to be maintained by me and the volunteers, and it will stay open source.</string>
     <string name="donationCampaign.contactPlatform">Discord</string>
     <string name="donationCampaign.dismiss">Dismiss</string>
+    <string name="tomo_tab_home">Home</string>
+    <string name="tomo_tab_discover">Discover</string>
+    <string name="tomo_tab_you">You</string>
+    <string name="tomo_pref_start_screen">Open the app on</string>
+    <string name="tomo_continue_reading">Continue reading</string>
+    <string name="tomo_action_continue">Continue</string>
+    <string name="tomo_recent">Recent</string>
+    <string name="tomo_new_chapters">New chapters</string>
+    <string name="tomo_see_all">See all</string>
+    <string name="tomo_home_empty">Your library is empty. Import a backup or find a series in Discover.</string>
 </resources>

@@ -895,4 +895,14 @@
     <string name="extensionStoresScreen.deleteStore.body">¿Seguro que quieres quitar el listado de extensiones «%1$s» (%2$s)?</string>
     <string name="pref_webtoon_vertical_navigator_on_left">Ubicar la interfaz de navegación en el margen izquierdo</string>
     <string name="update_issues_title">Necesitan tu atención</string>
+    <string name="tomo_tab_home">Inicio</string>
+    <string name="tomo_tab_discover">Descubrir</string>
+    <string name="tomo_tab_you">Tú</string>
+    <string name="tomo_pref_start_screen">Abrir la app en</string>
+    <string name="tomo_continue_reading">Continuar leyendo</string>
+    <string name="tomo_action_continue">Continuar</string>
+    <string name="tomo_recent">Recientes</string>
+    <string name="tomo_new_chapters">Novedades</string>
+    <string name="tomo_see_all">Ver todo</string>
+    <string name="tomo_home_empty">Tu biblioteca está vacía. Importa un respaldo o busca una serie en Descubrir.</string>
 </resources>

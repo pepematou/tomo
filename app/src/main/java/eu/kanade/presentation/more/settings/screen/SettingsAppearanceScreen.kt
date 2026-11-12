@@ -122,6 +122,14 @@ object SettingsAppearanceScreen : SearchableSettings {
                     onClick = { navigator.push(AppLanguageScreen()) },
                 ),
                 Preference.PreferenceItem.ListPreference(
+                    preference = uiPreferences.startOnLibrary,
+                    entries = mapOf(
+                        false to stringResource(MR.strings.tomo_tab_home),
+                        true to stringResource(MR.strings.label_library),
+                    ),
+                    title = stringResource(MR.strings.tomo_pref_start_screen),
+                ),
+                Preference.PreferenceItem.ListPreference(
                     preference = uiPreferences.tabletUiMode,
                     entries = TabletUiMode.entries
                         .associateWith { stringResource(it.titleRes) },

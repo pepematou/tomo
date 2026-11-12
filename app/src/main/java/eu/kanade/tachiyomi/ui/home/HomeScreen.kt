@@ -19,6 +19,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -63,10 +64,10 @@ object HomeScreen : Screen() {
     @Suppress("ConstPropertyName")
     private const val TabNavigatorKey = "HomeTabs"
 
+    // Updates and History are opened from Home instead of having their own tabs
     private val TABS = listOf(
+        HomeTab,
         LibraryTab,
-        UpdatesTab,
-        HistoryTab,
         BrowseTab,
         MoreTab,
     )
@@ -74,8 +75,10 @@ object HomeScreen : Screen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
+        val startTab = remember { if (context.appGraph.uiPreferences.startOnLibrary.get()) LibraryTab else HomeTab }
         TabNavigator(
-            tab = LibraryTab,
+            tab = startTab,
             key = TabNavigatorKey,
         ) { tabNavigator ->
             // Provide usable navigator to content screen
@@ -129,7 +132,7 @@ object HomeScreen : Screen() {
 
             val goToLibraryTab = { tabNavigator.current = LibraryTab }
 
-            BackHandler(enabled = tabNavigator.current != LibraryTab, onBack = goToLibraryTab)
+            BackHandler(enabled = tabNavigator.current != startTab, onBack = { tabNavigator.current = startTab })
 
             LaunchedEffect(Unit) {
                 launch {
@@ -142,8 +145,7 @@ object HomeScreen : Screen() {
                     openTabEvent.receiveAsFlow().collectLatest {
                         tabNavigator.current = when (it) {
                             is Tab.Library -> LibraryTab
-                            Tab.Updates -> UpdatesTab
-                            Tab.History -> HistoryTab
+                            Tab.Updates, Tab.History -> HomeTab
                             is Tab.Browse -> {
                                 if (it.toExtensions) {
                                     BrowseTab.showExtension()
@@ -156,6 +158,8 @@ object HomeScreen : Screen() {
                         if (it is Tab.Library && it.mangaIdToOpen != null) {
                             navigator.push(MangaScreen(it.mangaIdToOpen))
                         }
+                        if (it is Tab.Updates) navigator.push(UpdatesTab)
+                        if (it is Tab.History) navigator.push(HistoryTab)
                         if (it is Tab.More && it.toDownloads) {
                             navigator.push(DownloadQueueScreen)
                         }
@@ -208,7 +212,7 @@ object HomeScreen : Screen() {
         val count by produceState(initialValue = 0, tab) {
             val graph = context.appGraph
             when (tab) {
-                is UpdatesTab -> {
+                is HomeTab -> {
                     combine(
                         graph.libraryPreferences.newShowUpdatesCount.changes(),
                         graph.libraryPreferences.newUpdatesCount.changes(),
@@ -230,7 +234,7 @@ object HomeScreen : Screen() {
         return {
             Badge {
                 val desc = when (tab) {
-                    is UpdatesTab -> pluralStringResource(
+                    is HomeTab -> pluralStringResource(
                         MR.plurals.notification_chapters_generic,
                         count = count,
                         count,

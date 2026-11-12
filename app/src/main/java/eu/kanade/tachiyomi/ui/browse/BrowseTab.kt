@@ -38,8 +38,8 @@ data object BrowseTab : Tab {
             val enter = AnimatedImageVector.animatedVectorResource(R.drawable.animated_browse_enter)
             val exit = AnimatedImageVector.animatedVectorResource(R.drawable.animated_browse_exit)
             return TabOptions(
-                index = 3u,
-                title = stringResource(MR.strings.browse),
+                index = 2u,
+                title = stringResource(MR.strings.tomo_tab_discover),
                 icon = rememberAnimatedVectorPainter(enter, exit, isSelected),
             )
         }
