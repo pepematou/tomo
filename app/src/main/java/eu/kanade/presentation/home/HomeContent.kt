@@ -1,7 +1,10 @@
 package eu.kanade.presentation.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -28,9 +32,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.manga.components.MangaCover
@@ -159,8 +167,12 @@ fun HomeContent(
                             }
                         }
                     }
-                    items(state.newChapters.take(NEW_CHAPTERS_SHOWN), key = { "new-${it.mangaId}" }) { group ->
-                        NewChaptersRow(group = group, onClick = { onClickManga(group.mangaId) })
+                    item(key = "new-chapters") {
+                        GlassPanel {
+                            state.newChapters.take(NEW_CHAPTERS_SHOWN).forEach { group ->
+                                NewChaptersRow(group = group, onClick = { onClickManga(group.mangaId) })
+                            }
+                        }
                     }
                 }
 
@@ -192,11 +204,28 @@ private fun ContinueCard(
     onContinue: () -> Unit,
     onClickManga: (Long) -> Unit,
 ) {
-    Card(
+    val shape = RoundedCornerShape(28.dp)
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.padding.medium),
+            .padding(horizontal = MaterialTheme.padding.medium)
+            .clip(shape)
+            .border(1.dp, MaterialTheme.colorScheme.outline, shape),
     ) {
+        // The card takes the color of the series: its own cover, blurred, behind a glass veil
+        AsyncImage(
+            model = history.coverData,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .matchParentSize()
+                .blur(40.dp),
+        )
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f)),
+        )
         Row(
             modifier = Modifier.padding(MaterialTheme.padding.medium).height(140.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -234,6 +263,22 @@ private fun ContinueCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun GlassPanel(content: @Composable () -> Unit) {
+    val shape = RoundedCornerShape(24.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = MaterialTheme.padding.medium)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
+            .padding(vertical = MaterialTheme.padding.small),
+    ) {
+        content()
     }
 }
 

@@ -86,7 +86,8 @@ private fun getThemeColorScheme(
     return colorScheme.getColorScheme(
         isDark = isDark,
         isAmoled = isAmoled,
-        overrideDarkSurfaceContainers = appTheme != AppTheme.MONET,
+        // Tomo keeps its glass panels on a pure black background
+        overrideDarkSurfaceContainers = appTheme != AppTheme.MONET && appTheme != AppTheme.TOMO,
     )
 }
 

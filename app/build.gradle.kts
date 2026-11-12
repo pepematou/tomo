@@ -309,6 +309,7 @@ dependencies {
     implementation(libs.reorderable)
     implementation(libs.bundles.markdown)
     implementation(libs.materialKolor)
+    implementation(libs.haze)
 
     // Logging
     implementation(libs.logcat)

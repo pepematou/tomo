@@ -3,6 +3,7 @@ package tachiyomi.presentation.core.components.material
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScaffoldDefaults
@@ -11,6 +12,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +25,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+
+/** Extra bottom inset for content drawn behind a floating navigation bar. */
+val LocalFloatingBarInset = compositionLocalOf { 0.dp }
 
 @Composable
 fun Scaffold(
@@ -37,7 +42,8 @@ fun Scaffold(
     floatingActionButtonPosition: FabPosition = FabPosition.End,
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = contentColorFor(containerColor),
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets
+        .add(WindowInsets(bottom = LocalFloatingBarInset.current)),
     content: @Composable (PaddingValues) -> Unit,
 ) {
     var fabHeight by remember { mutableIntStateOf(0) }
