@@ -1,0 +1,7 @@
+build/
+.gradle/
+**/build/
+**/res/drawable*/
+**/res/mipmap*/
+i18n/src/commonMain/moko-resources/values-*/
+i18n/src/commonMain/moko-resources/*-r*/
