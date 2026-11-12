@@ -63,7 +63,10 @@ fun LibraryGlassHeader(
                 modifier = Modifier.size(14.dp),
             )
             Text(
-                text = stringResource(MR.strings.tomo_library_updated, relativeTimeSpanString(lastUpdated)),
+                text = stringResource(
+                    MR.strings.tomo_library_updated,
+                    relativeTimeSpanString(lastUpdated).replaceFirstChar { it.lowercase() },
+                ),
                 color = Tomo.textFaint,
                 fontSize = 12.sp,
             )

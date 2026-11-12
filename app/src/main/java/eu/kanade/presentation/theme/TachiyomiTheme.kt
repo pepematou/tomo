@@ -2,13 +2,16 @@ package eu.kanade.presentation.theme
 
 import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
 import eu.kanade.presentation.theme.colorscheme.CatppuccinColorScheme
@@ -70,10 +73,14 @@ private fun BaseTachiyomiTheme(
             )
         },
         typography = if (appTheme == AppTheme.TOMO) TomoTypography else MaterialTheme.typography,
+        // Covers and badges use extraSmall: 10 dp corners in Tomo's design
+        shapes = if (appTheme == AppTheme.TOMO) TomoShapes else MaterialTheme.shapes,
     ) {
         CompositionLocalProvider(LocalGlassTheme provides (appTheme == AppTheme.TOMO), content = content)
     }
 }
+
+private val TomoShapes = Shapes(extraSmall = RoundedCornerShape(10.dp))
 
 private fun getThemeColorScheme(
     context: Context,

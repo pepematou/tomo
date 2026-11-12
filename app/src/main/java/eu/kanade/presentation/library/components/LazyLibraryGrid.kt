@@ -7,7 +7,9 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import tachiyomi.presentation.core.components.FastScrollLazyVerticalGrid
 import tachiyomi.presentation.core.util.plus
 
@@ -19,7 +21,8 @@ internal fun LazyLibraryGrid(
     content: LazyGridScope.() -> Unit,
 ) {
     FastScrollLazyVerticalGrid(
-        columns = if (columns == 0) GridCells.Adaptive(128.dp) else GridCells.Fixed(columns),
+        // Automatic columns: Tomo's larger covers give 3 per row on a phone
+        columns = if (columns == 0) GridCells.Adaptive(autoColumnMinWidth()) else GridCells.Fixed(columns),
         modifier = modifier,
         contentPadding = contentPadding + PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(CommonMangaItemDefaults.GridVerticalSpacer),
@@ -44,3 +47,6 @@ internal fun LazyGridScope.globalSearchItem(
         }
     }
 }
+
+@Composable
+private fun autoColumnMinWidth(): Dp = if (LocalGlassTheme.current) 110.dp else 128.dp
