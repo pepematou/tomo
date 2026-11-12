@@ -1283,4 +1283,24 @@
     <string name="tomo_fanfic_chapters">%1$d of %2$s ch.</string>
     <string name="tomo_fanfic_status_complete">Complete</string>
     <string name="tomo_fanfic_status_wip">In progress</string>
+    <string name="tomo_open_in_ao3">Open in AO3</string>
+    <string name="tomo_fanfic_badge_ao3">Spanish · AO3</string>
+    <string name="tomo_fanfic_stat_words">words</string>
+    <string name="tomo_fanfic_stat_chapters">chapters</string>
+    <string name="tomo_fanfic_stat_status">status</string>
+    <string name="tomo_fanfic_stat_updated">last update</string>
+    <string name="tomo_read_chapter">Read ch. %1$s</string>
+    <string name="tomo_fanfic_follow_help">Follow it to get its new chapters in New chapters.</string>
+    <string name="tomo_fanfic_following_help">New chapters will arrive in New chapters, and it is kept on your Fanfics shelf.</string>
+    <string name="tomo_fanfic_summary">Summary</string>
+    <string name="tomo_more">More</string>
+    <string name="tomo_less">Less</string>
+    <string name="tomo_fanfic_published">%1$d of %2$s published</string>
+    <string name="tomo_rating_general">General audiences</string>
+    <string name="tomo_rating_teen">Teen and up</string>
+    <string name="tomo_rating_mature">Mature</string>
+    <string name="tomo_rating_explicit">Explicit</string>
+    <string name="tomo_rating_none">Not rated</string>
+    <string name="tomo_warning_not_given">Warnings not given</string>
+    <string name="tomo_thousands">%1$dk</string>
 </resources>

@@ -1081,4 +1081,24 @@
     <string name="tomo_fanfic_chapters">%1$d de %2$s cap.</string>
     <string name="tomo_fanfic_status_complete">Completo</string>
     <string name="tomo_fanfic_status_wip">En curso</string>
+    <string name="tomo_open_in_ao3">Abrir en AO3</string>
+    <string name="tomo_fanfic_badge_ao3">Español · AO3</string>
+    <string name="tomo_fanfic_stat_words">palabras</string>
+    <string name="tomo_fanfic_stat_chapters">capítulos</string>
+    <string name="tomo_fanfic_stat_status">estado</string>
+    <string name="tomo_fanfic_stat_updated">última act.</string>
+    <string name="tomo_read_chapter">Leer cap. %1$s</string>
+    <string name="tomo_fanfic_follow_help">Síguelo para recibir sus capítulos nuevos en Novedades.</string>
+    <string name="tomo_fanfic_following_help">Los capítulos nuevos llegarán a Novedades y se guardará en tu estante de Fanfics.</string>
+    <string name="tomo_fanfic_summary">Resumen</string>
+    <string name="tomo_more">Más</string>
+    <string name="tomo_less">Menos</string>
+    <string name="tomo_fanfic_published">%1$d de %2$s publicados</string>
+    <string name="tomo_rating_general">Para todo público</string>
+    <string name="tomo_rating_teen">Adolescentes y más</string>
+    <string name="tomo_rating_mature">Adultos</string>
+    <string name="tomo_rating_explicit">Explícito</string>
+    <string name="tomo_rating_none">Sin clasificar</string>
+    <string name="tomo_warning_not_given">Advertencias sin indicar</string>
+    <string name="tomo_thousands">%1$d mil</string>
 </resources>

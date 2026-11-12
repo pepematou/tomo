@@ -30,6 +30,7 @@ import eu.kanade.presentation.manga.ChapterSettingsDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.presentation.manga.MangaScreen
+import eu.kanade.presentation.manga.TomoFanficContent
 import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
 import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
@@ -41,6 +42,7 @@ import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
 import eu.kanade.tachiyomi.ui.browse.migration.TomoWhereToSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -50,6 +52,7 @@ import eu.kanade.tachiyomi.ui.manga.notes.MangaNotesScreen
 import eu.kanade.tachiyomi.ui.manga.track.TrackInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toShareIntent
@@ -58,6 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
+import mihon.app.di.appGraph
 import mihon.feature.migration.config.MigrationConfigScreen
 import mihon.feature.migration.dialog.MigrateMangaDialog
 import tachiyomi.core.common.util.system.logcat
@@ -113,6 +117,43 @@ class MangaScreen(
         var reopenAvailable by rememberSaveable { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             if (reopenAvailable) showAvailable = true
+        }
+        // Tomo: fanfics and other text works get their own ficha (RF-30)
+        val isTextWork = remember(successState.manga.id) {
+            successState.source.id == Ao3Source.ID || context.appGraph.textWorks.isText(successState.manga.id)
+        }
+        if (glass && isTextWork) {
+            val followFanfic = remember { context.appGraph.followFanfic }
+            TomoFanficContent(
+                manga = successState.manga,
+                chapters = successState.chapters.map { it.chapter }.sortedBy { it.chapterNumber },
+                nextChapter = viewModel.getNextUnreadChapter(),
+                isAo3 = successState.source.id == Ao3Source.ID,
+                onBack = navigator::pop,
+                onOpenWeb = {
+                    context.startActivity(
+                        WebViewActivity.newIntent(
+                            context,
+                            Ao3Source.webUrl(successState.manga.url),
+                            Ao3Source.ID,
+                            successState.manga.title,
+                        ),
+                    )
+                },
+                onRefresh = viewModel::fetchAllFromSource,
+                onRead = { continueReading(context, viewModel.getNextUnreadChapter()) },
+                onToggleFollow = {
+                    scope.launch {
+                        if (successState.manga.favorite) {
+                            followFanfic.unfollow(successState.manga.id)
+                        } else {
+                            followFanfic.follow(successState.manga)
+                        }
+                    }
+                },
+                onChapterClick = { openChapter(context, it) },
+            )
+            return
         }
         MangaScreen(
             state = successState,
