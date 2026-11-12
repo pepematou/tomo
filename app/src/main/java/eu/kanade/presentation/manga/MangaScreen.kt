@@ -644,28 +644,50 @@ fun MangaScreenLargeImpl(
                             .verticalScroll(rememberScrollState())
                             .padding(bottom = contentPadding.calculateBottomPadding()),
                     ) {
-                        MangaInfoBox(
-                            isTabletUi = true,
-                            appBarPadding = contentPadding.calculateTopPadding(),
-                            manga = state.manga,
-                            source = remember { state.source },
-                            sourceName = state.sourceName,
-                            isStubSource = remember { state.source is StubSource },
-                            onCoverClick = onCoverClicked,
-                            doSearch = onSearch,
-                        )
-                        MangaActionRow(
-                            favorite = state.manga.favorite,
-                            trackingCount = state.trackingCount,
-                            nextUpdate = nextUpdate,
-                            isUserIntervalMode = state.manga.fetchInterval < 0,
-                            onAddToLibraryClicked = onAddToLibraryClicked,
-                            onWebViewClicked = onWebViewClicked,
-                            onWebViewLongClicked = onWebViewLongClicked,
-                            onTrackingClicked = onTrackingClicked,
-                            onEditIntervalClicked = onEditIntervalClicked,
-                            onEditCategory = onEditCategoryClicked,
-                        )
+                        if (LocalGlassTheme.current) {
+                            TomoMangaHeader(
+                                manga = state.manga,
+                                sourceName = state.sourceName,
+                                chapterCount = chapters.size,
+                                appBarPadding = contentPadding.calculateTopPadding(),
+                                onCoverClick = onCoverClicked,
+                            )
+                            TomoMangaActions(
+                                favorite = state.manga.favorite,
+                                trackingCount = state.trackingCount,
+                                onAddToLibraryClicked = onAddToLibraryClicked,
+                                onTrackingClicked = onTrackingClicked,
+                                onWebViewClicked = onWebViewClicked,
+                                onEditIntervalClicked = onEditIntervalClicked,
+                                onAvailableClicked = onMigrateClicked,
+                                mangaId = state.manga.id,
+                            )
+                        } else {
+                            MangaInfoBox(
+                                isTabletUi = true,
+                                appBarPadding = contentPadding.calculateTopPadding(),
+                                manga = state.manga,
+                                source = remember { state.source },
+                                sourceName = state.sourceName,
+                                isStubSource = remember { state.source is StubSource },
+                                onCoverClick = onCoverClicked,
+                                doSearch = onSearch,
+                            )
+                        }
+                        if (!LocalGlassTheme.current) {
+                            MangaActionRow(
+                                favorite = state.manga.favorite,
+                                trackingCount = state.trackingCount,
+                                nextUpdate = nextUpdate,
+                                isUserIntervalMode = state.manga.fetchInterval < 0,
+                                onAddToLibraryClicked = onAddToLibraryClicked,
+                                onWebViewClicked = onWebViewClicked,
+                                onWebViewLongClicked = onWebViewLongClicked,
+                                onTrackingClicked = onTrackingClicked,
+                                onEditIntervalClicked = onEditIntervalClicked,
+                                onEditCategory = onEditCategoryClicked,
+                            )
+                        }
                         ExpandableMangaDescription(
                             defaultExpandState = true,
                             description = state.manga.description,

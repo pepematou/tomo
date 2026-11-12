@@ -32,6 +32,7 @@ import eu.kanade.presentation.tomo.TomoBackground
 import eu.kanade.presentation.tomo.TomoHeader
 import eu.kanade.presentation.tomo.TomoSwitch
 import eu.kanade.presentation.tomo.glass
+import eu.kanade.presentation.tomo.tomoContentWidth
 import eu.kanade.tachiyomi.BuildConfig
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.automirroredrounded.Label
@@ -69,7 +70,7 @@ fun TomoMoreContent(
             contentPadding = PaddingValues(bottom = bottomPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .fillMaxSize()
+                .tomoContentWidth()
                 .statusBarsPadding(),
         ) {
             item(key = "header") {

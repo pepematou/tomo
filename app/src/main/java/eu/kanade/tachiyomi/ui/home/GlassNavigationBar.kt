@@ -5,13 +5,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BadgedBox
@@ -77,25 +78,26 @@ internal fun GlassNavigationBar(
     ) {
         // Badges are gold in the design, not the theme's error color
         MaterialTheme(colorScheme = colors.copy(error = Tomo.gold, onError = Tomo.night)) {
-            tabs.forEach { tab -> BarItem(tab, tab::class == selected::class, onClick, badge) }
+            tabs.forEach { tab ->
+                BarItem(tab, tab::class == selected::class, onClick, badge, Modifier.weight(1f).fillMaxHeight())
+            }
         }
     }
 }
 
 @Composable
-private fun RowScope.BarItem(
+private fun BarItem(
     tab: Tab,
     isSelected: Boolean,
     onClick: (Tab) -> Unit,
     badge: @Composable (Tab) -> (@Composable () -> Unit)?,
+    modifier: Modifier,
 ) {
     val tint = if (isSelected) Tomo.text else Tomo.textFaint
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .weight(1f)
-            .fillMaxHeight()
+        modifier = modifier
             .clip(BarShape)
             .then(if (isSelected) Modifier.background(Tomo.glassStrong) else Modifier)
             .selectable(selected = isSelected, role = Role.Tab, onClick = { onClick(tab) }),
@@ -116,5 +118,48 @@ private fun RowScope.BarItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+    }
+}
+
+internal val GlassNavigationRailWidth = 88.dp
+
+/** The navigation bar of tablets: the same glass items, stacked on the left edge. */
+@Composable
+internal fun GlassNavigationRail(
+    tabs: List<Tab>,
+    selected: Tab,
+    hazeState: HazeState,
+    onClick: (Tab) -> Unit,
+    badge: @Composable (Tab) -> (@Composable () -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxHeight()
+            .systemBarsPadding()
+            .padding(start = 12.dp, top = 12.dp, bottom = 12.dp)
+            .width(GlassNavigationRailWidth - 12.dp)
+            .shadow(elevation = 16.dp, shape = BarShape, ambientColor = Color.Black, spotColor = Color.Black)
+            .clip(BarShape)
+            .hazeBlur(
+                input = HazeInput.Sources(hazeState),
+                style = HazeBlurStyle {
+                    blurRadius(24.dp)
+                    backgroundColor(colors.background)
+                    colorEffects(listOf(HazeColorEffect.tint(Color.White.copy(alpha = 0.13f))))
+                    fallbackColorEffect(HazeColorEffect.tint(colors.surfaceContainerHigh.copy(alpha = 0.95f)))
+                },
+            )
+            .border(1.dp, Tomo.glassBorder, BarShape)
+            .padding(6.dp),
+    ) {
+        MaterialTheme(colorScheme = colors.copy(error = Tomo.gold, onError = Tomo.night)) {
+            tabs.forEach { tab ->
+                BarItem(tab, tab::class == selected::class, onClick, badge, Modifier.fillMaxWidth().height(68.dp))
+            }
+        }
     }
 }

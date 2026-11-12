@@ -54,6 +54,7 @@ import eu.kanade.presentation.tomo.TomoPrimaryButton
 import eu.kanade.presentation.tomo.TomoProgressBar
 import eu.kanade.presentation.tomo.TomoSectionTitle
 import eu.kanade.presentation.tomo.glass
+import eu.kanade.presentation.tomo.tomoContentWidth
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
@@ -115,7 +116,7 @@ fun HomeContent(
                 contentPadding = PaddingValues(bottom = bottomPadding),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
-                    .fillMaxSize()
+                    .tomoContentWidth()
                     .statusBarsPadding(),
             ) {
                 item(key = "header") {

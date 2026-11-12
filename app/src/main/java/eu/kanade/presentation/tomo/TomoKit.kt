@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -70,6 +72,9 @@ object Tomo {
     val glowTeal = Color(0xFF1F6B6B)
 
     val screenPadding = 16.dp
+
+    /** Widest a column of content gets, so tablets in landscape don't stretch it edge to edge. */
+    val maxContentWidth = 720.dp
 }
 
 /** Night background with two large, soft color glows, as in every mockup screen. */
@@ -324,3 +329,9 @@ fun TomoSwitch(checked: Boolean, modifier: Modifier = Modifier) {
         ),
     )
 }
+
+/** Fills the screen but keeps the content centered and at most [Tomo.maxContentWidth] wide. */
+fun Modifier.tomoContentWidth(): Modifier = this
+    .fillMaxSize()
+    .wrapContentWidth(Alignment.CenterHorizontally)
+    .widthIn(max = Tomo.maxContentWidth)

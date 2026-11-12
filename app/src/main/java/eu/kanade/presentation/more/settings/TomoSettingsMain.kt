@@ -42,6 +42,7 @@ import eu.kanade.presentation.tomo.TomoBackground
 import eu.kanade.presentation.tomo.TomoHeader
 import eu.kanade.presentation.tomo.TomoSectionTitle
 import eu.kanade.presentation.tomo.glass
+import eu.kanade.presentation.tomo.tomoContentWidth
 import eu.kanade.presentation.util.relativeTimeSpanString
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.BarChart
@@ -78,7 +79,7 @@ fun TomoSettingsMain(
             contentPadding = PaddingValues(bottom = bottomPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .fillMaxSize()
+                .tomoContentWidth()
                 .statusBarsPadding(),
         ) {
             item(key = "header") {

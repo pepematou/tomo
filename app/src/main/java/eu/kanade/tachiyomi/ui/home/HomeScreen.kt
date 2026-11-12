@@ -9,6 +9,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -104,7 +105,7 @@ object HomeScreen : Screen() {
                 } else {
                     NavigationSuiteType.NavigationBar
                 }
-                val glassBar = isGlassTheme && !tabletUi
+                val glassBar = isGlassTheme
                 var glassBarVisible by remember { mutableStateOf(true) }
                 val navigationSuiteState = rememberNavigationSuiteScaffoldState()
                 LaunchedEffect(navigationSuiteState, tabletUi) {
@@ -138,6 +139,30 @@ object HomeScreen : Screen() {
                     }
                     val hazeState = rememberHazeState()
                     val scope = rememberCoroutineScope()
+                    val onClickTab: (eu.kanade.presentation.util.Tab) -> Unit = { tab ->
+                        if (tabNavigator.current::class != tab::class) {
+                            tabNavigator.current = tab
+                        } else {
+                            scope.launch { tab.onReselect(navigator) }
+                        }
+                    }
+                    if (tabletUi) {
+                        Box(Modifier.fillMaxSize()) {
+                            Box(
+                                Modifier
+                                    .hazeSource(hazeState)
+                                    .padding(start = GlassNavigationRailWidth),
+                            ) { tabContent() }
+                            GlassNavigationRail(
+                                tabs = TABS,
+                                selected = tabNavigator.current as eu.kanade.presentation.util.Tab,
+                                hazeState = hazeState,
+                                onClick = onClickTab,
+                                badge = { tabBadge(it) },
+                            )
+                        }
+                        return@NavigationSuiteScaffold
+                    }
                     Box(Modifier.fillMaxSize()) {
                         CompositionLocalProvider(LocalFloatingBarInset provides GlassNavigationBarInset) {
                             Box(Modifier.hazeSource(hazeState)) { tabContent() }
@@ -152,13 +177,7 @@ object HomeScreen : Screen() {
                                 tabs = TABS,
                                 selected = tabNavigator.current as eu.kanade.presentation.util.Tab,
                                 hazeState = hazeState,
-                                onClick = { tab ->
-                                    if (tabNavigator.current::class != tab::class) {
-                                        tabNavigator.current = tab
-                                    } else {
-                                        scope.launch { tab.onReselect(navigator) }
-                                    }
-                                },
+                                onClick = onClickTab,
                                 badge = { tabBadge(it) },
                             )
                         }
