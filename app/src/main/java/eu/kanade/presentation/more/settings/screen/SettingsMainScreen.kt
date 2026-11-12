@@ -14,12 +14,15 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -28,10 +31,18 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.more.settings.TomoSettingsMain
 import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.data.library.LibraryUpdateWorker
+import eu.kanade.tachiyomi.ui.browse.BrowseTabsScreen
+import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.workManager
+import kotlinx.coroutines.launch
+import mihon.app.di.appGraph
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.automirroredrounded.ChromeReaderMode
 import mihon.icons.materialsymbols.rounded.Code
@@ -47,6 +58,7 @@ import mihon.icons.materialsymbols.rounded.Sync
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.util.collectAsState
 import cafe.adriel.voyager.core.screen.Screen as VoyagerScreen
 
 object SettingsMainScreen : Screen() {
@@ -76,6 +88,10 @@ object SettingsMainScreen : Screen() {
     fun Content(twoPane: Boolean) {
         val navigator = LocalNavigator.currentOrThrow
         val backPress = LocalBackPress.currentOrThrow
+        if (LocalGlassTheme.current && !twoPane) {
+            TomoContent(navigateUp = backPress::invoke)
+            return
+        }
         val containerColor = if (twoPane) getPalerSurface() else MaterialTheme.colorScheme.surface
         val topBarState = rememberTopAppBarState()
 
@@ -155,6 +171,32 @@ object SettingsMainScreen : Screen() {
                     }
                 }
             },
+        )
+    }
+
+    @Composable
+    private fun TomoContent(navigateUp: () -> Unit) {
+        val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val graph = remember { context.appGraph }
+        val interval by graph.libraryPreferences.autoUpdateInterval.collectAsState()
+        val lastUpdated by graph.libraryPreferences.lastUpdatedTimestamp.collectAsState()
+        val extensionUpdates by graph.sourcePreferences.extensionUpdatesCount.collectAsState()
+        TomoSettingsMain(
+            updateIntervalHours = interval,
+            lastLibraryUpdate = lastUpdated,
+            extensionUpdates = extensionUpdates,
+            navigateUp = navigateUp,
+            onClickSearch = { navigator.push(SettingsSearchScreen()) },
+            onUpdateLibrary = {
+                scope.launch {
+                    val started = LibraryUpdateWorker.startNow(context.workManager)
+                    context.toast(if (started) MR.strings.updating_library else MR.strings.update_already_running)
+                }
+            },
+            onUpdateExtensions = { navigator.push(BrowseTabsScreen(initialPage = 1)) },
+            onOpen = navigator::push,
         )
     }
 

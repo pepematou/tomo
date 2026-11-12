@@ -122,4 +122,8 @@
         <item quantity="one">%1$d series</item>
         <item quantity="other">%1$d series</item>
     </plurals>
+    <plurals name="tomo_extension_updates">
+        <item quantity="one">%1$d available</item>
+        <item quantity="other">%1$d available</item>
+    </plurals>
 </resources>

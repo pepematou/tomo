@@ -123,4 +123,8 @@
         <item quantity="one">%1$d obra</item>
         <item quantity="other">%1$d obras</item>
     </plurals>
+    <plurals name="tomo_extension_updates">
+        <item quantity="one">%1$d disponible</item>
+        <item quantity="other">%1$d disponibles</item>
+    </plurals>
 </resources>
