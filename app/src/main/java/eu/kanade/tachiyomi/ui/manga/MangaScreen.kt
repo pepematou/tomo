@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -33,12 +34,14 @@ import eu.kanade.presentation.manga.components.DeleteChaptersDialog
 import eu.kanade.presentation.manga.components.MangaCoverDialog
 import eu.kanade.presentation.manga.components.ScanlatorFilterDialog
 import eu.kanade.presentation.manga.components.SetIntervalDialog
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.migration.TomoWhereToSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
@@ -104,6 +107,13 @@ class MangaScreen(
             }
         }
 
+        val glass = LocalGlassTheme.current
+        var showAvailable by rememberSaveable { mutableStateOf(false) }
+        // Set when the user went to choose sources, so the sheet comes back with a fresh search
+        var reopenAvailable by rememberSaveable { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            if (reopenAvailable) showAvailable = true
+        }
         MangaScreen(
             state = successState,
             snackbarHostState = viewModel.snackbarHostState,
@@ -157,7 +167,11 @@ class MangaScreen(
                 successState.manga.favorite
             },
             onMigrateClicked = {
-                navigator.push(MigrationConfigScreen(successState.manga.id))
+                if (glass) {
+                    showAvailable = true
+                } else {
+                    navigator.push(MigrationConfigScreen(successState.manga.id))
+                }
             }.takeIf { successState.manga.favorite },
             onEditNotesClicked = { navigator.push(MangaNotesScreen(manga = successState.manga)) },
             onMultiBookmarkClicked = viewModel::bookmarkChapters,
@@ -169,6 +183,26 @@ class MangaScreen(
             onAllChapterSelected = viewModel::toggleAllSelection,
             onInvertSelection = viewModel::invertSelection,
         )
+
+        if (showAvailable) {
+            AvailableSheetHost(
+                mangaId = successState.manga.id,
+                refresh = reopenAvailable,
+                onDismissRequest = {
+                    showAvailable = false
+                    reopenAvailable = false
+                },
+                onChooseSources = {
+                    showAvailable = false
+                    reopenAvailable = true
+                    navigator.push(TomoWhereToSearchScreen(successState.manga.title))
+                },
+                onOpenSeries = { newMangaId ->
+                    showAvailable = false
+                    navigator.replace(MangaScreen(newMangaId))
+                },
+            )
+        }
 
         var showScanlatorsDialog by remember { mutableStateOf(false) }
 

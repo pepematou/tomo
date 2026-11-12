@@ -430,6 +430,8 @@ private fun MangaScreenSmallImpl(
                                 onTrackingClicked = onTrackingClicked,
                                 onWebViewClicked = onWebViewClicked,
                                 onEditIntervalClicked = onEditIntervalClicked,
+                                onAvailableClicked = onMigrateClicked,
+                                mangaId = state.manga.id,
                             )
                             return@item
                         }

@@ -134,4 +134,8 @@
         <item quantity="one">No results in %d more source</item>
         <item quantity="other">No results in %d more sources</item>
     </plurals>
+    <plurals name="tomo_found_in_sources">
+        <item quantity="one">We found it in %d source.</item>
+        <item quantity="other">We found it in %d sources.</item>
+    </plurals>
 </resources>

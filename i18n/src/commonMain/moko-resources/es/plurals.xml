@@ -135,4 +135,8 @@
         <item quantity="one">Sin resultados en %d fuente más</item>
         <item quantity="other">Sin resultados en %d fuentes más</item>
     </plurals>
+    <plurals name="tomo_found_in_sources">
+        <item quantity="one">Encontramos la obra en %d fuente.</item>
+        <item quantity="other">Encontramos la obra en %d fuentes.</item>
+    </plurals>
 </resources>

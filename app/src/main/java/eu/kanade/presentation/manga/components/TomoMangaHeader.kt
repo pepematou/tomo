@@ -17,6 +17,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -29,6 +32,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -39,13 +43,17 @@ import eu.kanade.presentation.tomo.GlassPill
 import eu.kanade.presentation.tomo.Tomo
 import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.util.relativeTimeSpanString
+import eu.kanade.tachiyomi.data.library.sourceDownIds
 import eu.kanade.tachiyomi.source.model.SManga
+import kotlinx.coroutines.flow.map
+import mihon.app.di.appGraph
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.Add
 import mihon.icons.materialsymbols.rounded.BarChart
 import mihon.icons.materialsymbols.rounded.Check
 import mihon.icons.materialsymbols.rounded.Public
 import mihon.icons.materialsymbols.rounded.Schedule
+import mihon.icons.materialsymbols.rounded.SwapHoriz
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.asMangaCover
 import tachiyomi.i18n.MR
@@ -167,7 +175,14 @@ fun TomoMangaActions(
     onTrackingClicked: () -> Unit,
     onWebViewClicked: (() -> Unit)?,
     onEditIntervalClicked: (() -> Unit)?,
+    onAvailableClicked: (() -> Unit)?,
+    mangaId: Long,
 ) {
+    val context = LocalContext.current
+    // Amber when the series' extension is missing or its site is gone
+    val sourceDown by remember(mangaId) {
+        context.appGraph.libraryUpdateIssues.issues.map { mangaId in it.sourceDownIds() }
+    }.collectAsState(false)
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -195,6 +210,14 @@ fun TomoMangaActions(
                 icon = MaterialSymbols.Rounded.Public,
                 text = stringResource(MR.strings.action_web_view),
                 onClick = onWebViewClicked,
+            )
+        }
+        if (onAvailableClicked != null) {
+            ActionPill(
+                icon = MaterialSymbols.Rounded.SwapHoriz,
+                iconTint = if (sourceDown) Tomo.amber else Tomo.text,
+                text = stringResource(MR.strings.tomo_available_in),
+                onClick = onAvailableClicked,
             )
         }
         if (onEditIntervalClicked != null) {
