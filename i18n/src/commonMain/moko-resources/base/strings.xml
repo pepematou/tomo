@@ -1149,4 +1149,6 @@
     <string name="tomo_settings_privacy">Privacy</string>
     <string name="tomo_settings_privacy_summary">Lock, hide content, crash reports</string>
     <string name="tomo_settings_advanced_summary">Network, cache and logs</string>
+    <string name="tomo_checked_ago">Checked %1$s</string>
+    <string name="tomo_update_frequency">Update frequency</string>
 </resources>

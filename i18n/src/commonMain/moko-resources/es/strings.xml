@@ -947,4 +947,6 @@
     <string name="tomo_settings_privacy">Privacidad</string>
     <string name="tomo_settings_privacy_summary">Bloqueo, ocultar contenido, reportes de errores</string>
     <string name="tomo_settings_advanced_summary">Red, caché y registros</string>
+    <string name="tomo_checked_ago">Revisado %1$s</string>
+    <string name="tomo_update_frequency">Frecuencia</string>
 </resources>

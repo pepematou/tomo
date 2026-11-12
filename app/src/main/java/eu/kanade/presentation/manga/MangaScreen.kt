@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarHost
@@ -42,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
@@ -55,6 +57,10 @@ import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.presentation.manga.components.MangaInfoBox
 import eu.kanade.presentation.manga.components.MangaToolbar
 import eu.kanade.presentation.manga.components.MissingChapterCountListItem
+import eu.kanade.presentation.manga.components.TomoMangaActions
+import eu.kanade.presentation.manga.components.TomoMangaHeader
+import eu.kanade.presentation.tomo.LocalGlassTheme
+import eu.kanade.presentation.tomo.TomoPrimaryButton
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
@@ -275,7 +281,10 @@ private fun MangaScreenSmallImpl(
         onAllChapterSelected(false)
     }
 
+    val glass = LocalGlassTheme.current
+
     Scaffold(
+        floatingActionButtonPosition = if (glass) FabPosition.Center else FabPosition.End,
         topBar = {
             val isFirstItemVisible by remember {
                 derivedStateOf { chapterListState.firstVisibleItemIndex == 0 }
@@ -324,6 +333,19 @@ private fun MangaScreenSmallImpl(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
             val isFABVisible = state.hasUnreadChapters && !isAnySelected
+            if (glass) {
+                // Tomo: a white, full-width "Keep reading" button floats over the chapter list
+                if (isFABVisible) {
+                    TomoPrimaryButton(
+                        text = stringResource(
+                            if (state.hasReadChapters) MR.strings.tomo_action_keep_reading else MR.strings.action_start,
+                        ),
+                        onClick = onContinueReading,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+                return@Scaffold
+            }
             SmallExtendedFloatingActionButton(
                 text = {
                     Text(
@@ -369,6 +391,16 @@ private fun MangaScreenSmallImpl(
                         key = MangaScreenItem.INFO_BOX,
                         contentType = MangaScreenItem.INFO_BOX,
                     ) {
+                        if (glass) {
+                            TomoMangaHeader(
+                                manga = state.manga,
+                                sourceName = state.sourceName,
+                                chapterCount = chapters.size,
+                                appBarPadding = topPadding,
+                                onCoverClick = onCoverClicked,
+                            )
+                            return@item
+                        }
                         MangaInfoBox(
                             isTabletUi = false,
                             appBarPadding = topPadding,
@@ -385,6 +417,17 @@ private fun MangaScreenSmallImpl(
                         key = MangaScreenItem.ACTION_ROW,
                         contentType = MangaScreenItem.ACTION_ROW,
                     ) {
+                        if (glass) {
+                            TomoMangaActions(
+                                favorite = state.manga.favorite,
+                                trackingCount = state.trackingCount,
+                                onAddToLibraryClicked = onAddToLibraryClicked,
+                                onTrackingClicked = onTrackingClicked,
+                                onWebViewClicked = onWebViewClicked,
+                                onEditIntervalClicked = onEditIntervalClicked,
+                            )
+                            return@item
+                        }
                         MangaActionRow(
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
