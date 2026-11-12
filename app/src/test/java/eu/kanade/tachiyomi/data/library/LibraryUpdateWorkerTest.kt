@@ -7,12 +7,16 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.SourceNotInstalledException
 import tachiyomi.i18n.MR
@@ -100,11 +104,30 @@ class LibraryUpdateWorkerTest {
         val skipped = LibraryUpdateIssues.Issue(1, "Berserk", LibraryUpdateIssues.Kind.SKIPPED, "complete")
         val failed = LibraryUpdateIssues.Issue(2, "Tower of God", LibraryUpdateIssues.Kind.ERROR, "Cloudflare")
 
-        LibraryUpdateIssues(context, Json).replace(setOf(1, 2), listOf(skipped, failed))
-        val reloaded = LibraryUpdateIssues(context, Json)
+        issuesStore(context).replace(setOf(1, 2), listOf(skipped, failed))
+        val reloaded = issuesStore(context)
         reloaded.issues.value shouldBe listOf(skipped, failed)
 
         reloaded.replace(setOf(1), emptyList())
-        LibraryUpdateIssues(context, Json).issues.value shouldBe listOf(failed)
+        issuesStore(context).issues.value shouldBe listOf(failed)
+    }
+
+    @Test
+    fun `series removed from the library lose their notice`(@TempDir dir: File) {
+        val context = mockk<Context> { every { filesDir } returns dir }
+        val removed = LibraryUpdateIssues.Issue(1, "Berserk", LibraryUpdateIssues.Kind.ERROR, "gone")
+        val kept = LibraryUpdateIssues.Issue(2, "Tower of God", LibraryUpdateIssues.Kind.ERROR, "Cloudflare")
+        val store = issuesStore(context, libraryIds = setOf(2))
+        store.replace(setOf(1, 2), listOf(removed, kept))
+        store.issues.value shouldBe listOf(kept)
+    }
+
+    private fun issuesStore(context: Context, libraryIds: Set<Long> = setOf(1, 2)): LibraryUpdateIssues {
+        val getLibraryManga = mockk<GetLibraryManga> {
+            every { subscribe() } returns flowOf(
+                libraryIds.map { id -> libraryManga().let { it.copy(manga = it.manga.copy(id = id)) } },
+            )
+        }
+        return LibraryUpdateIssues(context, Json, getLibraryManga, CoroutineScope(Dispatchers.Unconfined))
     }
 }

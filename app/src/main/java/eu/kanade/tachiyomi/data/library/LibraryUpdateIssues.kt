@@ -4,11 +4,17 @@ import android.content.Context
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import mihon.core.metro.AppCoroutineScope
+import tachiyomi.domain.manga.interactor.GetLibraryManga
 import java.io.File
 
 /**
@@ -22,11 +28,20 @@ import java.io.File
 class LibraryUpdateIssues(
     context: Context,
     private val json: Json,
+    getLibraryManga: GetLibraryManga,
+    @AppCoroutineScope scope: CoroutineScope,
 ) {
     private val file = File(context.filesDir, "library_update_issues.json")
 
     private val _issues = MutableStateFlow(load())
-    val issues: StateFlow<List<Issue>> = _issues.asStateFlow()
+
+    /** Issues of series still in the library: removing or migrating a series clears its notice at once. */
+    val issues: StateFlow<List<Issue>> = combine(
+        _issues,
+        getLibraryManga.subscribe().map { library -> library.mapTo(HashSet()) { it.id } },
+        ::inLibrary,
+    )
+        .stateIn(scope, SharingStarted.Eagerly, _issues.value)
 
     /** Replaces the issues of the series in [checkedIds] with [found]; issues of other series are kept. */
     @Synchronized
@@ -41,6 +56,7 @@ class LibraryUpdateIssues(
     /** Clears the notice of a series, e.g. once it was migrated to a working source. */
     fun remove(mangaId: Long) = replace(setOf(mangaId), emptyList())
 
+    // shortcut: issues of removed series stay in the file (only hidden); prune them if the file ever grows large
     private fun load(): List<Issue> = try {
         json.decodeFromString<List<Issue>>(file.readText())
     } catch (_: Exception) {
@@ -72,3 +88,9 @@ fun List<LibraryUpdateIssues.Issue>.sourceDownIds(): Set<Long> =
             it.action == LibraryUpdateIssues.Action.INSTALL_EXTENSION
     }
         .mapTo(mutableSetOf()) { it.mangaId }
+
+internal fun inLibrary(
+    issues: List<LibraryUpdateIssues.Issue>,
+    libraryIds: Set<Long>,
+): List<LibraryUpdateIssues.Issue> =
+    issues.filter { it.mangaId in libraryIds }
