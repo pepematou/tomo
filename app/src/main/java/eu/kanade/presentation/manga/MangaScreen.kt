@@ -2,6 +2,7 @@ package eu.kanade.presentation.manga
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,8 +20,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
@@ -37,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +64,7 @@ import eu.kanade.presentation.manga.components.MissingChapterCountListItem
 import eu.kanade.presentation.manga.components.TomoMangaActions
 import eu.kanade.presentation.manga.components.TomoMangaHeader
 import eu.kanade.presentation.tomo.LocalGlassTheme
+import eu.kanade.presentation.tomo.Tomo
 import eu.kanade.presentation.tomo.TomoPrimaryButton
 import eu.kanade.presentation.util.formatChapterNumber
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -769,21 +774,26 @@ private fun LazyListScope.sharedChapterItems(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean) -> Unit,
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
 ) {
-    items(
+    itemsIndexed(
         items = chapters,
-        key = { item ->
+        key = { _, item ->
             when (item) {
                 is ChapterList.MissingCount -> "missing-count-${item.id}"
                 is ChapterList.Item -> "chapter-${item.id}"
             }
         },
-        contentType = { MangaScreenItem.CHAPTER },
-    ) { item ->
+        contentType = { _, _ -> MangaScreenItem.CHAPTER },
+    ) { index, item ->
         val haptic = LocalHapticFeedback.current
+        val panelModifier = if (LocalGlassTheme.current) {
+            Modifier.chapterPanelSegment(isFirst = index == 0, isLast = index == chapters.lastIndex)
+        } else {
+            Modifier
+        }
 
         when (item) {
             is ChapterList.MissingCount -> {
-                MissingChapterCountListItem(count = item.count)
+                MissingChapterCountListItem(count = item.count, modifier = panelModifier)
             }
             is ChapterList.Item -> {
                 MangaChapterListItem(
@@ -833,6 +843,7 @@ private fun LazyListScope.sharedChapterItems(
                     onChapterSwipe = {
                         onChapterSwipe(item, it)
                     },
+                    modifier = panelModifier,
                 )
             }
         }
@@ -850,4 +861,16 @@ private fun onChapterItemClick(
         isAnyChapterSelected -> onToggleSelection(true)
         else -> onChapterClicked(chapterItem.chapter)
     }
+}
+
+/** Tomo: chapters stack into one glass panel, rounded only at its top and bottom ends. */
+private fun Modifier.chapterPanelSegment(isFirst: Boolean, isLast: Boolean): Modifier {
+    val radius = 24.dp
+    val shape = RoundedCornerShape(
+        topStart = if (isFirst) radius else 0.dp,
+        topEnd = if (isFirst) radius else 0.dp,
+        bottomStart = if (isLast) radius else 0.dp,
+        bottomEnd = if (isLast) radius else 0.dp,
+    )
+    return padding(horizontal = 16.dp).clip(shape).background(Tomo.glass)
 }
