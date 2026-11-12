@@ -27,6 +27,8 @@ import eu.kanade.tachiyomi.data.library.sourceDownIds
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.tomo.text.TextWorks
+import eu.kanade.tachiyomi.tomo.text.workType
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +70,7 @@ import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.library.service.LibraryPreferences.Companion.TYPE_ALL
 import tachiyomi.domain.manga.interactor.GetLibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.manga.model.MangaUpdate
@@ -101,6 +104,7 @@ class LibraryViewModel(
     private val downloadCache: DownloadCache,
     private val trackerManager: TrackerManager,
     private val libraryUpdateIssues: LibraryUpdateIssues,
+    private val textWorks: TextWorks,
 ) : ViewModel() {
 
     private val subscriberGate = SubscriberGate()
@@ -113,11 +117,13 @@ class LibraryViewModel(
 
     private val activeCategoryIndex = MutableStateFlow(libraryPreferences.lastUsedCategory.get())
 
-    // Tomo: the "Fuente caída" filter and the ids it applies to
+    // Tomo: the "Fuente caída" filter and the work type chips
     private val sourceDownFilter = combine(
         libraryPreferences.filterSourceDown.changes(),
         libraryUpdateIssues.issues,
-    ) { filter, issues -> filter to issues.sourceDownIds() }
+        libraryPreferences.tomoTypeFilter.changes(),
+        textWorks.works,
+    ) { filter, issues, type, works -> TomoFilter(filter, issues.sourceDownIds(), type, works.keys) }
 
     private val displayPreferences = combine(
         libraryPreferences.categoryTabs.changes(),
@@ -164,10 +170,9 @@ class LibraryViewModel(
         getLibraryItemPreferencesFlow(),
     ) { searchQuery, categories, favorites, (tracksMap, trackingFilters, sourceDown), itemPreferences ->
         val showSystemCategory = favorites.any { it.libraryManga.categories.contains(0) }
-        val (sourceDownState, sourceDownIds) = sourceDown
         val filteredFavorites = favorites
             .applyFilters(tracksMap, trackingFilters, itemPreferences)
-            .filter { item -> applyFilter(sourceDownState) { item.id in sourceDownIds } }
+            .filter(sourceDown::matches)
             .let { libraryItems ->
                 if (searchQuery.isNullOrEmpty()) {
                     libraryItems
@@ -865,4 +870,19 @@ class LibraryViewModel(
             return LibraryToolbarTitle(title, count)
         }
     }
+}
+
+/** Tomo's own library filters: "Fuente caída" and the work type chips (Manga, Manhwa, Texto). */
+private data class TomoFilter(
+    val sourceDown: TriState,
+    val sourceDownIds: Set<Long>,
+    val type: String,
+    val textIds: Set<Long>,
+) {
+    fun matches(item: LibraryItem): Boolean =
+        applyFilter(sourceDown) { item.id in sourceDownIds } &&
+            (
+                type == TYPE_ALL ||
+                    workType(item.libraryManga.manga.genre, item.sourceLanguage, item.id in textIds).name == type
+                )
 }

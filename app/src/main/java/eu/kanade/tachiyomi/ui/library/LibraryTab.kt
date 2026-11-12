@@ -122,6 +122,7 @@ data object LibraryTab : Tab {
         val libraryPreferences = remember { context.appGraph.libraryPreferences }
         val lastUpdated by libraryPreferences.lastUpdatedTimestamp.collectAsState()
         val shelfView by libraryPreferences.tomoShelfView.collectAsState()
+        val typeFilter by libraryPreferences.tomoTypeFilter.collectAsState()
         val sourceDownIds by remember {
             context.appGraph.libraryUpdateIssues.issues.map { it.sourceDownIds() }
         }.collectAsState(emptySet())
@@ -139,6 +140,8 @@ data object LibraryTab : Tab {
                         onClickFilter = viewModel::showSettingsDialog,
                         shelfView = shelfView,
                         onShelfViewChange = libraryPreferences.tomoShelfView::set,
+                        type = typeFilter,
+                        onTypeChange = libraryPreferences.tomoTypeFilter::set,
                     )
                     return@Scaffold
                 }

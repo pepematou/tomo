@@ -8,6 +8,7 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 
 - No hay migraciones SQL ni tablas nuevas en la base de Mihon.
 - Los avisos de actualización (omitidas y errores) viven en `library_update_issues.json` (`data/library/LibraryUpdateIssues.kt`).
+- Las obras de texto (fanfics) se marcan en `text_works.json` (`tomo/text/TextWorks.kt`) y viven en la fuente Local como un EPUB por obra.
 - Las búsquedas de "Disponible en" se guardan 24 h en `alternatives_cache.json` (`tomo/alternatives/AlternativeFinder.kt`).
 - Las preferencias nuevas usan claves con prefijo `tomo_`.
 
@@ -65,3 +66,12 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | Archivo | Por qué |
 | --- | --- |
 | `presentation/more/onboarding/OnboardingScreen.kt`, `ui/more/OnboardingScreen.kt` | Bienvenida de cristal en 3 pasos y acceso a repositorios |
+
+## Fanfics (v0.14)
+
+| Archivo | Por qué |
+| --- | --- |
+| `ui/reader/ReaderActivity.kt` | `newIntent` abre el lector de texto si la serie es de texto |
+| `ui/main/MainActivity.kt` | Un enlace de AO3 compartido abre la importación en vez de la búsqueda |
+| `AndroidManifest.xml` | Actividad `TextReaderActivity` |
+| `presentation/theme/TomoTypography.kt` | La familia Onest se comparte con el lector de texto |

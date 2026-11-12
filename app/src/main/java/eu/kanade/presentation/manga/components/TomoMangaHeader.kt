@@ -73,6 +73,8 @@ fun TomoMangaHeader(
     onCoverClick: () -> Unit,
 ) {
     val cover = manga.asMangaCover()
+    val context = LocalContext.current
+    val isText = remember(manga.id) { context.appGraph.textWorks.isText(manga.id) }
     // Mihon names a source whose extension is missing by its numeric id
     val sourceMissing = sourceName == manga.source.toString()
     val sourceLabel = if (sourceMissing) stringResource(MR.strings.tomo_extension_not_installed) else sourceName
@@ -139,6 +141,7 @@ fun TomoMangaHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                if (isText) GlassPill(stringResource(MR.strings.tomo_type_text), color = Tomo.gold)
                 GlassPill(statusText(manga.status))
                 GlassPill(sourceLabel, color = if (sourceMissing) Tomo.amber else null)
                 GlassPill(pluralStringResource(MR.plurals.manga_num_chapters, chapterCount, chapterCount))

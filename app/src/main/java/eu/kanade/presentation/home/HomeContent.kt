@@ -35,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +62,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateIssues
 import eu.kanade.tachiyomi.ui.home.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mihon.app.di.appGraph
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.History
 import mihon.icons.materialsymbols.rounded.Refresh
@@ -280,7 +282,12 @@ private fun ContinueCard(
                 val chapter = formatChapterNumber(history.chapterNumber)
                 Text(
                     text = if (progress != null && progress.page > 0) {
-                        stringResource(MR.strings.tomo_chapter_page, chapter, progress.page)
+                        val isText = LocalContext.current.appGraph.textWorks.isText(history.mangaId)
+                        stringResource(
+                            if (isText) MR.strings.tomo_chapter_paragraph else MR.strings.tomo_chapter_page,
+                            chapter,
+                            progress.page,
+                        )
                     } else {
                         stringResource(MR.strings.tomo_chapter_short, chapter)
                     },

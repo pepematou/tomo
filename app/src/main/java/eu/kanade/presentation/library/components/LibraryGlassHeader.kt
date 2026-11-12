@@ -1,6 +1,7 @@
 package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -26,10 +28,12 @@ import eu.kanade.presentation.tomo.Tomo
 import eu.kanade.presentation.tomo.TomoHeader
 import eu.kanade.presentation.tomo.glass
 import eu.kanade.presentation.util.relativeTimeSpanString
+import eu.kanade.tachiyomi.tomo.text.WorkType
 import mihon.icons.materialsymbols.MaterialSymbols
 import mihon.icons.materialsymbols.rounded.FilterList
 import mihon.icons.materialsymbols.rounded.Refresh
 import mihon.icons.materialsymbols.rounded.Search
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -44,6 +48,8 @@ fun LibraryGlassHeader(
     onClickFilter: () -> Unit,
     shelfView: Boolean,
     onShelfViewChange: (Boolean) -> Unit,
+    type: String,
+    onTypeChange: (String) -> Unit,
 ) {
     Column(modifier = Modifier.statusBarsPadding()) {
         TomoHeader(
@@ -114,6 +120,38 @@ fun LibraryGlassHeader(
                             color = if (selected) Tomo.night else Tomo.textSecondary,
                         )
                     }
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(start = Tomo.screenPadding, end = Tomo.screenPadding, top = 10.dp),
+        ) {
+            listOf(
+                LibraryPreferences.TYPE_ALL to MR.strings.tomo_type_all,
+                WorkType.MANGA.name to MR.strings.tomo_type_manga,
+                WorkType.MANHWA.name to MR.strings.tomo_type_manhwa,
+                WorkType.TEXT.name to MR.strings.tomo_type_text,
+            ).forEach { (value, label) ->
+                val selected = type == value
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .height(36.dp)
+                        .then(
+                            if (selected) Modifier.background(Tomo.text, CircleShape) else Modifier.glass(CircleShape),
+                        )
+                        .selectable(selected = selected, role = Role.RadioButton) { onTypeChange(value) }
+                        .padding(horizontal = 14.dp),
+                ) {
+                    Text(
+                        text = stringResource(label),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (selected) Tomo.night else Tomo.text,
+                    )
                 }
             }
         }

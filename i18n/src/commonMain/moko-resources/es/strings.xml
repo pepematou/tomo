@@ -1056,4 +1056,9 @@
     <string name="tomo_import_error_not_found">AO3 no tiene una obra con ese enlace.</string>
     <string name="tomo_import_error_link">Ese no es un enlace de una obra de Archive of Our Own.</string>
     <string name="tomo_import_error_network">AO3 no respondió. Inténtalo más tarde.</string>
+    <string name="tomo_type_all">Todo</string>
+    <string name="tomo_type_manga">Manga</string>
+    <string name="tomo_type_manhwa">Manhwa</string>
+    <string name="tomo_type_text">Texto</string>
+    <string name="tomo_chapter_paragraph">Cap. %1$s, párrafo %2$d</string>
 </resources>

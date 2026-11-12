@@ -135,6 +135,9 @@ class LibraryPreferences(
     /** Tomo: shows the library as shelves of spines instead of a grid of covers. */
     val tomoShelfView: Preference<Boolean> = preferenceStore.getBoolean("tomo_library_shelf_view", false)
 
+    /** Tomo: work type chip of the library, ALL or a work type name (MANGA, MANHWA, TEXT). */
+    val tomoTypeFilter: Preference<String> = preferenceStore.getString("tomo_library_type", TYPE_ALL)
+
     val categoryNumberOfItems: Preference<Boolean> = preferenceStore.getBoolean("display_number_of_items", false)
 
     val categorizedDisplaySettings: Preference<Boolean> = preferenceStore.getBoolean("categorized_display", false)
@@ -236,6 +239,8 @@ class LibraryPreferences(
     }
 
     companion object {
+        const val TYPE_ALL = "ALL"
+
         const val DEVICE_ONLY_ON_WIFI = "wifi"
         const val DEVICE_NETWORK_NOT_METERED = "network_not_metered"
         const val DEVICE_CHARGING = "ac"
