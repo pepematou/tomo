@@ -14,6 +14,7 @@ import eu.kanade.presentation.webview.WebViewScreenContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.tomo.text.TextSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -69,10 +70,12 @@ class WebViewActivity : BaseActivity() {
         setComposeContent {
             // Null until the source it belongs to has been resolved
             val headers by produceState<Map<String, String>?>(initialValue = null) {
-                val source = sourceManager.get(intent.extras!!.getLong(SOURCE_KEY)) as? HttpSource
+                val found = sourceManager.get(intent.extras!!.getLong(SOURCE_KEY))
+                val source = found as? HttpSource
                 value = withContext(Dispatchers.IO) {
                     try {
-                        source?.headers?.toWebViewHeaders().orEmpty()
+                        // Tomo: fanfic sources aren't HttpSources but may need their own user agent
+                        source?.headers?.toWebViewHeaders() ?: (found as? TextSource)?.webViewHeaders.orEmpty()
                     } catch (e: Exception) {
                         logcat(LogPriority.ERROR, e) { "Failed to build headers" }
                         emptyMap()

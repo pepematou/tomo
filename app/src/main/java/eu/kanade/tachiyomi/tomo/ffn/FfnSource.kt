@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.tomo.text.FanficSearchPage
 import eu.kanade.tachiyomi.tomo.text.TextSource
 import eu.kanade.tachiyomi.tomo.text.fetchText
 import eu.kanade.tachiyomi.tomo.text.toSManga
+import okhttp3.Headers
 import okhttp3.OkHttpClient
 import kotlin.time.Duration.Companion.seconds
 
@@ -53,7 +54,7 @@ class FfnSource(networkHelper: NetworkHelper) : TextSource {
     )
 
     override suspend fun searchWorks(search: FanficSearch, page: Int): FanficSearchPage =
-        parseFfnSearch(client.fetchText(ffnSearchUrl(search, page, fandoms.first().filter).toString()), search)
+        parseFfnSearch(client.fetchText(ffnSearchUrl(search, page, fandoms.first().filter).toString(), headers), search)
 
     override suspend fun getPopularManga(page: Int): MangasPage =
         searchWorks(FanficSearch(sort = FanficSearch.Sort.FAVORITES), page).toMangasPage()
@@ -72,7 +73,7 @@ class FfnSource(networkHelper: NetworkHelper) : TextSource {
         fetchChapters: Boolean,
     ): SMangaUpdate {
         // The story page has both the details and the chapter selector
-        val html = client.fetchText("$FFN_BASE${manga.url}")
+        val html = client.fetchText("$FFN_BASE${manga.url}", headers)
         val details = if (fetchDetails) parseFfnStory(html, manga.url).toSManga() else manga
         val chapterList = if (fetchChapters) {
             parseFfnChapters(html, manga.url)
@@ -92,7 +93,7 @@ class FfnSource(networkHelper: NetworkHelper) : TextSource {
     }
 
     override suspend fun getChapterHtml(chapterUrl: String): String =
-        parseFfnChapter(client.fetchText("$FFN_BASE$chapterUrl"))
+        parseFfnChapter(client.fetchText("$FFN_BASE$chapterUrl", headers))
 
     override suspend fun getPageList(chapter: SChapter): List<Page> = emptyList()
 
@@ -100,10 +101,19 @@ class FfnSource(networkHelper: NetworkHelper) : TextSource {
 
     override fun webUrl(url: String) = "$FFN_BASE$url"
 
+    // A phone's user agent is sent to m.fanfiction.net, which has no summaries or chapter titles; the desktop site
+    // has both. Mihon's Cloudflare solver and the browser take the user agent from these headers, so cookies match.
+    private val headers = Headers.headersOf("User-Agent", DESKTOP_USER_AGENT)
+
+    override val webViewHeaders = mapOf("user-agent" to DESKTOP_USER_AGENT)
+
     override fun toString() = name
 
     companion object {
         /** Fixed id, next to AO3's and far from the hashes extensions get. */
         const val ID = 7_316_030_304L
+
+        private const val DESKTOP_USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
     }
 }

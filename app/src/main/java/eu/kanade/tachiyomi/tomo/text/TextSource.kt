@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import tachiyomi.i18n.MR
@@ -35,6 +36,9 @@ interface TextSource : CatalogueSource {
     suspend fun getChapterHtml(chapterUrl: String): String
 
     fun webUrl(url: String): String
+
+    /** Headers the browser must send for this site, so a Cloudflare check passed there also works in Tomo. */
+    val webViewHeaders: Map<String, String> get() = emptyMap()
 }
 
 /** Why a fanfic site did not answer, so Tomo can say it (RF-30i). */
@@ -84,33 +88,34 @@ object TextSourceHealth {
 }
 
 /** GET a page as text, turning outages and Cloudflare walls into [SourceUnavailableException]. */
-internal suspend fun OkHttpClient.fetchText(url: String): String = withContext(Dispatchers.IO) {
-    val host = url.toHttpUrl().host
-    try {
-        newCall(GET(url)).await().use { response ->
-            val body = response.body.string()
-            when {
-                isMaintenancePage(response.code, body) ->
-                    throw SourceUnavailableException(SourceUnavailableException.Reason.DOWN)
-                response.code == 403 && response.header("cf-mitigated") != null ->
-                    throw SourceUnavailableException(SourceUnavailableException.Reason.VERIFICATION)
-                !response.isSuccessful -> error("HTTP error ${response.code}")
+internal suspend fun OkHttpClient.fetchText(url: String, headers: Headers = Headers.headersOf()): String =
+    withContext(Dispatchers.IO) {
+        val host = url.toHttpUrl().host
+        try {
+            newCall(GET(url, headers)).await().use { response ->
+                val body = response.body.string()
+                when {
+                    isMaintenancePage(response.code, body) ->
+                        throw SourceUnavailableException(SourceUnavailableException.Reason.DOWN)
+                    response.code == 403 && response.header("cf-mitigated") != null ->
+                        throw SourceUnavailableException(SourceUnavailableException.Reason.VERIFICATION)
+                    !response.isSuccessful -> error("HTTP error ${response.code}")
+                }
+                if (response.request.url.encodedPath.startsWith("/users/login")) {
+                    throw SourceUnavailableException(SourceUnavailableException.Reason.RESTRICTED)
+                }
+                TextSourceHealth.record(host, null)
+                body
             }
-            if (response.request.url.encodedPath.startsWith("/users/login")) {
-                throw SourceUnavailableException(SourceUnavailableException.Reason.RESTRICTED)
-            }
-            TextSourceHealth.record(host, null)
-            body
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // A restricted work is about that work, not the site
+            classifyFailure(e).takeIf { it != SourceUnavailableException.Reason.RESTRICTED }
+                ?.let { TextSourceHealth.record(host, it) }
+            throw e
         }
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        // A restricted work is about that work, not the site
-        classifyFailure(e).takeIf { it != SourceUnavailableException.Reason.RESTRICTED }
-            ?.let { TextSourceHealth.record(host, it) }
-        throw e
     }
-}
 
 /** The fanfic site and path of the work in a shared link (AO3 or FanFiction.net), or null if it is not one. */
 fun fanficLink(text: String): Pair<Long, String>? =
