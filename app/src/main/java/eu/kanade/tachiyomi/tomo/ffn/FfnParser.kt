@@ -16,11 +16,14 @@ const val FFN_BASE = "https://www.fanfiction.net"
 private const val SPANISH = "2"
 
 /**
- * A fandom page when a fandom is chosen (FanFiction.net search can't filter by fandom name), otherwise the keyword
- * search. Both are always in Spanish (RF-30a).
+ * A fandom page when a fandom is chosen (FanFiction.net search can't filter by fandom name), the keyword search when
+ * there is text, otherwise the "Just In" list of every fandom. All are in Spanish (RF-30a).
  */
-fun ffnSearchUrl(search: FanficSearch, page: Int, defaultFandom: String): HttpUrl =
-    if (search.query.isNotBlank() && search.fandom.isBlank()) {
+fun ffnSearchUrl(search: FanficSearch, page: Int): HttpUrl =
+    if (search.query.isBlank() && search.fandom.isBlank()) {
+        // Just In: /j/<category>/<new or updated>/<language>/, a single page newest first, so sort doesn't apply
+        "$FFN_BASE/j/0/0/$SPANISH/".toHttpUrl()
+    } else if (search.fandom.isBlank()) {
         "$FFN_BASE/search/".toHttpUrl().newBuilder()
             .addQueryParameter("keywords", search.query.trim())
             .addQueryParameter("type", "story")
@@ -29,8 +32,7 @@ fun ffnSearchUrl(search: FanficSearch, page: Int, defaultFandom: String): HttpUr
             .addQueryParameter("ppage", page.toString())
             .build()
     } else {
-        // shortcut: with no query and no fandom it shows the default fandom; a Spanish "just in" list would be better
-        "$FFN_BASE${search.fandom.ifBlank { defaultFandom }}".toHttpUrl().newBuilder()
+        "$FFN_BASE${search.fandom}".toHttpUrl().newBuilder()
             .addQueryParameter("lan", SPANISH)
             .addQueryParameter("srt", search.sort.ffnSort())
             .addQueryParameter("p", page.toString())

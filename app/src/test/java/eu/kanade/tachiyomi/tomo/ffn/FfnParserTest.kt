@@ -70,14 +70,14 @@ class FfnParserTest {
 
     @Test
     fun `search is always in Spanish`() {
-        val search = ffnSearchUrl(FanficSearch(query = "lluvia"), 2, "/book/Harry-Potter/")
+        val search = ffnSearchUrl(FanficSearch(query = "lluvia"), 2)
         search.encodedPath shouldBe "/search/"
         search.queryParameter("languageid") shouldBe "2"
         search.queryParameter("ppage") shouldBe "2"
-        val fandom = ffnSearchUrl(FanficSearch(fandom = "/anime/Naruto/"), 1, "/book/Harry-Potter/")
+        val fandom = ffnSearchUrl(FanficSearch(fandom = "/anime/Naruto/"), 1)
         fandom.encodedPath shouldBe "/anime/Naruto/"
         fandom.queryParameter("lan") shouldBe "2"
-        ffnSearchUrl(FanficSearch(), 1, "/book/Harry-Potter/").encodedPath shouldBe "/book/Harry-Potter/"
+        ffnSearchUrl(FanficSearch(), 1).encodedPath shouldBe "/j/0/0/2/"
     }
 
     private val storyHtml = """
@@ -173,5 +173,14 @@ class FfnParserTest {
         val html = item(1, "T", "Rated: T - Spanish - Drama - Chapters: 1 - Words: 10")
             .replace("Un resumen.", "Boku no <b>Hero</b> <b>Academia</b>.")
         parseFfnSearch(html, FanficSearch()).works.single().summary shouldBe "Boku no Hero Academia."
+    }
+
+    @Test
+    fun `Just In lines start with the fandom`() {
+        val html = item(2, "Nuevo", "Naruto - Rated: T - Spanish - Romance - Chapters: 4 - Words: 8,000 - Complete")
+        val work = parseFfnSearch(html, FanficSearch()).works.single()
+        work.meta.rating shouldBe "Teen And Up Audiences"
+        work.meta.words shouldBe 8_000
+        work.meta.complete shouldBe true
     }
 }

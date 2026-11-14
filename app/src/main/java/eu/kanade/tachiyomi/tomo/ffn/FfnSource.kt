@@ -62,7 +62,7 @@ class FfnSource(networkHelper: NetworkHelper) : TextSource {
     )
 
     override suspend fun searchWorks(search: FanficSearch, page: Int): FanficSearchPage =
-        parseFfnSearch(client.fetchText(ffnSearchUrl(search, page, fandoms.first().filter).toString(), headers), search)
+        parseFfnSearch(client.fetchText(ffnSearchUrl(search, page).toString(), headers), search)
 
     override suspend fun getPopularManga(page: Int): MangasPage =
         searchWorks(FanficSearch(sort = FanficSearch.Sort.FAVORITES), page).toMangasPage()
