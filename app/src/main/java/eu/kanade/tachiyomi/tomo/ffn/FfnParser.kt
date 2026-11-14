@@ -66,7 +66,8 @@ private fun parseListItem(item: Element): Pair<FanficWork, String>? {
     val id = storyId(link.attr("href")) ?: return null
     val info = item.selectFirst("div.xgray") ?: return null
     val stats = parseStats(info)
-    val summary = item.selectFirst("div.z-indent")?.ownText().orEmpty()
+    // FanFiction.net bolds the searched words, so the whole text is taken, minus the stats line inside it
+    val summary = item.selectFirst("div.z-indent")?.clone()?.apply { select("div.xgray").remove() }?.text().orEmpty()
     return FanficWork(
         url = "/s/$id",
         title = link.text(),

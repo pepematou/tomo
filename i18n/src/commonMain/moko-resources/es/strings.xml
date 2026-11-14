@@ -1138,4 +1138,6 @@
     <string name="tomo_fanfic_sort_favorites">Más favoritos</string>
     <string name="tomo_fanfic_sort_reviews">Más reseñas</string>
     <string name="tomo_fanfic_no_mature">Sin contenido adulto</string>
+    <string name="tomo_fanfic_series">Series</string>
+    <string name="tomo_fanfic_series_selected">Serie: %1$s ✕</string>
 </resources>

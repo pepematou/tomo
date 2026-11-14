@@ -63,8 +63,12 @@ data class FanficSearch(
     enum class Sort { UPDATED, KUDOS, WORDS, HITS, FAVORITES, REVIEWS }
 }
 
-/** A fandom tile of the explore grid: what it is called, what kind of work, and how the source filters by it. */
-data class Fandom(val name: String, val kind: String, val filter: String)
+/**
+ * A fandom: what it is called, what kind of work, how the source filters by it, and how many stories it has
+ * ("31.2K") when the source says.
+ */
+@Serializable
+data class Fandom(val name: String, val kind: String, val filter: String, val stories: String? = null)
 
 fun FanficWork.toSManga(): SManga = SManga.create().also {
     it.url = url

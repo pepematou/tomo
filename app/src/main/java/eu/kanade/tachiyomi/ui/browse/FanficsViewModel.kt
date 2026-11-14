@@ -10,7 +10,10 @@ import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
+import eu.kanade.tachiyomi.tomo.ffn.FfnFandoms
 import eu.kanade.tachiyomi.tomo.ffn.FfnSource
+import eu.kanade.tachiyomi.tomo.ffn.matchFandoms
+import eu.kanade.tachiyomi.tomo.text.Fandom
 import eu.kanade.tachiyomi.tomo.text.FanficSearch
 import eu.kanade.tachiyomi.tomo.text.FanficWork
 import eu.kanade.tachiyomi.tomo.text.FollowFanfic
@@ -49,6 +52,7 @@ class FanficsViewModel(
     private val getFavorites: GetFavorites,
     private val getChaptersByMangaId: GetChaptersByMangaId,
     private val textCache: TextCache,
+    private val ffnFandoms: FfnFandoms,
 ) : ViewModel() {
 
     val sources: List<TextSource> = listOf(ao3Source, ffnSource)
@@ -59,10 +63,23 @@ class FanficsViewModel(
     val state: StateFlow<State> = _state.asStateFlow()
 
     private var loadJob: Job? = null
+    private var fandomsJob: Job? = null
 
     init {
         load(reset = true)
+        // Directory categories arrive one by one; suggestions follow
+        viewModelScope.launch {
+            ffnFandoms.fandoms.collect { _state.update { it.copy(series = seriesFor(it)) } }
+        }
     }
+
+    /** Fandoms of FanFiction.net matching the typed text, so any series can be opened, not only the tiles. */
+    private fun seriesFor(state: State): List<Fandom> =
+        if (state.source.id == FfnSource.ID && state.search.query.trim().length >= 2) {
+            matchFandoms(ffnFandoms.fandoms.value, state.search.query)
+        } else {
+            emptyList()
+        }
 
     fun setSource(source: TextSource) {
         uiPreferences.fanficSource.set(source.id)
@@ -71,8 +88,34 @@ class FanficsViewModel(
     }
 
     fun setQuery(query: String) {
-        _state.update { it.copy(search = it.search.copy(query = query)) }
+        _state.update {
+            it.copy(search = it.search.copy(query = query)).let { new -> new.copy(series = seriesFor(new)) }
+        }
+        if (_state.value.source.id == FfnSource.ID && fandomsJob == null) {
+            fandomsJob = viewModelScope.launch {
+                try {
+                    ffnFandoms.ensureLoaded()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    // Suggestions are a help; the search itself still works, and the next typing tries again
+                }
+                fandomsJob = null
+            }
+        }
         load(reset = true, debounce = true)
+    }
+
+    /** Shows the stories of [fandom] (a tile or a suggestion), or the general list again when null. */
+    fun selectFandom(fandom: Fandom?) {
+        _state.update {
+            it.copy(
+                search = it.search.copy(fandom = fandom?.filter.orEmpty(), query = ""),
+                fandom = fandom,
+                series = emptyList(),
+            )
+        }
+        load(reset = true)
     }
 
     fun setSearch(search: FanficSearch) {
@@ -155,5 +198,9 @@ class FanficsViewModel(
         val problem: SourceUnavailableException.Reason? = null,
         val downloaded: List<Downloaded> = emptyList(),
         val followed: Set<String> = emptySet(),
+        /** The fandom being shown, for its chip; null for the general list. */
+        val fandom: Fandom? = null,
+        /** Fandoms matching the typed text. */
+        val series: List<Fandom> = emptyList(),
     )
 }

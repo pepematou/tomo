@@ -90,6 +90,7 @@ fun TomoFanficsExplore(
     onSource: (TextSource) -> Unit,
     onQuery: (String) -> Unit,
     onSearch: (FanficSearch) -> Unit,
+    onSelectFandom: (Fandom?) -> Unit,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
     onVerify: () -> Unit,
@@ -143,6 +144,38 @@ fun TomoFanficsExplore(
             item(key = "mode") { modeSwitch() }
             item(key = "source") { SourceSwitch(sources, state.source, onSource) }
             item(key = "search") { SearchField(search.query, onQuery) }
+            state.fandom?.takeIf { search.fandom.isNotBlank() }?.let { fandom ->
+                item(key = "fandom") {
+                    Row(modifier = Modifier.padding(horizontal = Tomo.screenPadding)) {
+                        FilterChip(stringResource(MR.strings.tomo_fanfic_series_selected, fandom.name), true) {
+                            onSelectFandom(null)
+                        }
+                    }
+                }
+            }
+            if (state.series.isNotEmpty()) {
+                item(key = "series") {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = Tomo.screenPadding),
+                    ) {
+                        Text(
+                            stringResource(MR.strings.tomo_fanfic_series),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            state.series.forEach { fandom ->
+                                val label = listOfNotNull(fandom.name, fandom.kind, fandom.stories).joinToString(" · ")
+                                FilterChip(label, selected = false) { onSelectFandom(fandom) }
+                            }
+                        }
+                    }
+                }
+            }
             item(key = "chips") {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -185,10 +218,7 @@ fun TomoFanficsExplore(
                                 FandomTile(
                                     fandom = fandom,
                                     selected = search.fandom == fandom.filter,
-                                    onClick = {
-                                        val selected = search.fandom == fandom.filter
-                                        onSearch(search.copy(fandom = if (selected) "" else fandom.filter))
-                                    },
+                                    onClick = { onSelectFandom(fandom.takeIf { search.fandom != it.filter }) },
                                     modifier = Modifier.weight(1f),
                                 )
                             }

@@ -145,4 +145,33 @@ class FfnParserTest {
         FanficMeta.fromMemo(memo)?.chaptersPosted shouldBe 14
         FanficMeta.fromMemo(memo)?.rating shouldBe "Mature"
     }
+
+    @Test
+    fun `directory lists every fandom with its count`() {
+        val html = """
+            <div><a href="/anime/Katekyo-Hitman-Reborn/" title="Katekyo Hitman Reborn!">Katekyo Hitman Reborn!</a>
+              <SPAN CLASS='gray'>(34.1K)</SPAN></div>
+            <div><a href="/anime/My-Hero-Academia/" title="My Hero Academia">My Hero Academia</a>
+              <SPAN CLASS='gray'>(31.2K)</SPAN></div>
+            <div><a href="/game/Pok%C3%A9mon/" title="Pokémon">Pokémon</a> <SPAN CLASS='gray'>(80K)</SPAN></div>
+            <a href="/anime/">Anime</a> <a href="/anime/My-Hero-Academia/?lan=2">otra</a>
+        """
+        val anime = parseFfnDirectory(html, "anime")
+        anime.map { it.name } shouldBe listOf("Katekyo Hitman Reborn!", "My Hero Academia")
+        anime[1].filter shouldBe "/anime/My-Hero-Academia/"
+        anime[1].stories shouldBe "31.2K"
+        anime[1].kind shouldBe "Anime"
+        val all = anime + parseFfnDirectory(html, "game")
+        matchFandoms(all, "my hero").map { it.name } shouldBe listOf("My Hero Academia")
+        matchFandoms(all, "POKEMON").map { it.name } shouldBe listOf("Pokémon")
+        matchFandoms(all, "o").first().name shouldBe "Pokémon"
+        storyCount("1.1M") shouldBe 1_100_000
+    }
+
+    @Test
+    fun `summary keeps the words FanFiction_net bolds`() {
+        val html = item(1, "T", "Rated: T - Spanish - Drama - Chapters: 1 - Words: 10")
+            .replace("Un resumen.", "Boku no <b>Hero</b> <b>Academia</b>.")
+        parseFfnSearch(html, FanficSearch()).works.single().summary shouldBe "Boku no Hero Academia."
+    }
 }

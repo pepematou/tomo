@@ -39,6 +39,14 @@ class FfnSource(networkHelper: NetworkHelper) : TextSource {
         .rateLimit(permits = 1, period = 3.seconds)
         .build()
 
+    // Its own limit, so loading the fandom directories in the background doesn't hold back searches
+    private val directoryClient: OkHttpClient = networkHelper.client.newBuilder()
+        .rateLimit(permits = 1, period = 3.seconds)
+        .build()
+
+    /** The page listing every fandom of a category ("anime", "book"…). */
+    suspend fun directoryHtml(category: String): String = directoryClient.fetchText("$FFN_BASE/$category/", headers)
+
     override val sorts = listOf(FanficSearch.Sort.UPDATED, FanficSearch.Sort.FAVORITES, FanficSearch.Sort.REVIEWS)
 
     // Fandoms with many stories in Spanish; the filter is the fandom's page

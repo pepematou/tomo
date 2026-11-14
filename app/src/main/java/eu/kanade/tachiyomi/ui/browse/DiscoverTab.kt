@@ -50,6 +50,7 @@ internal fun DiscoverTab() {
             onSource = fanficsViewModel::setSource,
             onQuery = fanficsViewModel::setQuery,
             onSearch = fanficsViewModel::setSearch,
+            onSelectFandom = fanficsViewModel::selectFandom,
             onLoadMore = fanficsViewModel::loadMore,
             onRetry = fanficsViewModel::retry,
             // Solving Cloudflare in the browser leaves its cookie for Tomo's requests, as with Mihon's extensions
