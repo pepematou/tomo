@@ -8,8 +8,6 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
-import eu.kanade.domain.ui.UiPreferences
-import eu.kanade.tachiyomi.tomo.ao3.Ao3Source
 import eu.kanade.tachiyomi.tomo.ffn.FfnFandoms
 import eu.kanade.tachiyomi.tomo.ffn.FfnSource
 import eu.kanade.tachiyomi.tomo.ffn.matchFandoms
@@ -37,16 +35,14 @@ import tachiyomi.domain.manga.interactor.GetMangaByUrlAndSourceId
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Searching and browsing Spanish fanfics on AO3 or FanFiction.net from Discover (RF-30b, RF-30d), and following them.
+ * Searching and browsing Spanish fanfics on FanFiction.net from Discover (RF-30d), and following them.
  * When the site does not answer it says why and offers the other site and the downloaded fanfics (RF-30i).
  */
 @Inject
 @ViewModelKey
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
 class FanficsViewModel(
-    ao3Source: Ao3Source,
     ffnSource: FfnSource,
-    private val uiPreferences: UiPreferences,
     private val followFanfic: FollowFanfic,
     private val getMangaByUrlAndSourceId: GetMangaByUrlAndSourceId,
     private val getFavorites: GetFavorites,
@@ -55,10 +51,11 @@ class FanficsViewModel(
     private val ffnFandoms: FfnFandoms,
 ) : ViewModel() {
 
-    val sources: List<TextSource> = listOf(ao3Source, ffnSource)
+    // AO3 left Discover at the user's request; works already followed still open and read from the phone
+    val sources: List<TextSource> = listOf(ffnSource)
 
     private val _state = MutableStateFlow(
-        State(source = sources.find { it.id == uiPreferences.fanficSource.get() } ?: ao3Source),
+        State(source = ffnSource),
     )
     val state: StateFlow<State> = _state.asStateFlow()
 
@@ -82,7 +79,6 @@ class FanficsViewModel(
         }
 
     fun setSource(source: TextSource) {
-        uiPreferences.fanficSource.set(source.id)
         _state.update { State(source = source, downloaded = it.downloaded) }
         load(reset = true)
     }

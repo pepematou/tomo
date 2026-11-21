@@ -97,6 +97,5 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `presentation/updates/UpdatesUiItem.kt` | La etiqueta "Fanfic" vale para AO3 y FanFiction.net |
 | `data/library/LibraryUpdateWorker.kt` | Al terminar, pone en cola la descarga de capítulos nuevos de fanfics (RF-30h) |
 | `ui/main/MainActivity.kt` | Un enlace compartido de AO3 o FanFiction.net abre la ficha del fanfic |
-| `domain/ui/UiPreferences.kt` | Descubrir → Fanfics recuerda la última fuente |
 | `mihon/app/di/AppGraph.kt` | Expone `FanficDownloader` y `TextCache` |
 | `ui/webview/WebViewActivity.kt` | Usa los encabezados de una fuente de fanfics (el user agent de escritorio de FanFiction.net) para que la verificación de Cloudflare valga en Tomo |

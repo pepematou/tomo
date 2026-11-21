@@ -142,7 +142,7 @@ fun TomoFanficsExplore(
                 }
             }
             item(key = "mode") { modeSwitch() }
-            item(key = "source") { SourceSwitch(sources, state.source, onSource) }
+            if (sources.size > 1) item(key = "source") { SourceSwitch(sources, state.source, onSource) }
             item(key = "search") { SearchField(search.query, onQuery) }
             state.fandom?.takeIf { search.fandom.isNotBlank() }?.let { fandom ->
                 item(key = "fandom") {
@@ -280,7 +280,7 @@ fun TomoFanficsExplore(
                         state.problem != null -> ProblemPanel(
                             reason = state.problem,
                             source = state.source,
-                            other = sources.first { it != state.source },
+                            other = sources.firstOrNull { it != state.source },
                             downloaded = state.downloaded,
                             onSource = onSource,
                             onRetry = onRetry,
@@ -347,7 +347,7 @@ private fun SourceSwitch(sources: List<TextSource>, current: TextSource, onSourc
 private fun ProblemPanel(
     reason: SourceUnavailableException.Reason,
     source: TextSource,
-    other: TextSource,
+    other: TextSource?,
     downloaded: List<FanficsViewModel.Downloaded>,
     onSource: (TextSource) -> Unit,
     onRetry: () -> Unit,
@@ -365,7 +365,9 @@ private fun ProblemPanel(
             if (reason == SourceUnavailableException.Reason.VERIFICATION) {
                 FilterChip(stringResource(MR.strings.tomo_source_verify), selected = true, onClick = onVerify)
             }
-            FilterChip(stringResource(MR.strings.tomo_search_in, other.name), selected = false) { onSource(other) }
+            if (other != null) {
+                FilterChip(stringResource(MR.strings.tomo_search_in, other.name), selected = false) { onSource(other) }
+            }
             FilterChip(stringResource(MR.strings.action_retry), selected = false, onClick = onRetry)
         }
         if (downloaded.isNotEmpty()) {
