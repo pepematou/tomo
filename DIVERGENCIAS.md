@@ -99,3 +99,10 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `ui/main/MainActivity.kt` | Un enlace compartido de AO3 o FanFiction.net abre la ficha del fanfic |
 | `mihon/app/di/AppGraph.kt` | Expone `FanficDownloader` y `TextCache` |
 | `ui/webview/WebViewActivity.kt` | Usa los encabezados de una fuente de fanfics (el user agent de escritorio de FanFiction.net) para que la verificación de Cloudflare valga en Tomo |
+
+## Estantes, tablet, lector, sincronización y estadísticas (v0.19+)
+
+| Archivo | Por qué |
+| --- | --- |
+| `ui/library/LibraryViewModel.kt` | `openChangeCategoryDialog` acepta la serie mantenida presionada en el estante |
+| `ui/library/LibraryTab.kt` | Mantener presionado un lomo del estante abre "Mover a…" |

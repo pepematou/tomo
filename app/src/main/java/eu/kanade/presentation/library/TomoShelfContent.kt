@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -72,6 +75,8 @@ fun TomoShelfContent(
     onOpenManga: (Long) -> Unit,
     onContinueReading: (LibraryItem) -> Unit,
     onCreateCategory: () -> Unit,
+    /** Long press on a spine: move that series to other shelves. */
+    onMove: (LibraryItem) -> Unit,
 ) {
     // "categoryId:mangaId" of the book that is out
     var open by rememberSaveable { mutableStateOf<String?>(null) }
@@ -126,6 +131,7 @@ fun TomoShelfContent(
                                     isOpen = open == key,
                                     sourceDown = item.id in sourceDownIds,
                                     onClick = { open = if (open == key) null else key },
+                                    onLongClick = { onMove(item) },
                                 )
                             }
                             if (items.size > SHELF_LIMIT) {
@@ -202,7 +208,14 @@ fun TomoShelfContent(
 }
 
 @Composable
-private fun Book(item: LibraryItem, isOpen: Boolean, sourceDown: Boolean, onClick: () -> Unit) {
+private fun Book(
+    item: LibraryItem,
+    isOpen: Boolean,
+    sourceDown: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    val haptic = LocalHapticFeedback.current
     val manga = item.libraryManga.manga
     val height = spineHeight(item.id).dp
     // Compose scales these by the system animation setting, so "remove animations" makes them instant
@@ -241,7 +254,14 @@ private fun Book(item: LibraryItem, isOpen: Boolean, sourceDown: Boolean, onClic
                 },
             )
             .clip(shape)
-            .clickable(role = Role.Button, onClick = onClick)
+            .combinedClickable(
+                role = Role.Button,
+                onClick = onClick,
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
+                },
+            )
             .semantics { contentDescription = description },
     ) {
         AsyncImage(

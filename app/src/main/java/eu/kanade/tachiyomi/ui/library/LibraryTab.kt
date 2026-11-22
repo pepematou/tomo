@@ -238,6 +238,7 @@ data object LibraryTab : Tab {
                             }
                         },
                         onCreateCategory = { navigator.push(CategoryScreen()) },
+                        onMove = { viewModel.openChangeCategoryDialog(listOf(it.libraryManga.manga)) },
                     )
                 }
                 else -> {

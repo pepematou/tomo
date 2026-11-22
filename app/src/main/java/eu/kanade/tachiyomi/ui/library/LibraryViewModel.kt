@@ -736,10 +736,10 @@ class LibraryViewModel(
         libraryPreferences.lastUsedCategory.set(index.coerceIn(0, lastIndex))
     }
 
-    fun openChangeCategoryDialog() {
+    fun openChangeCategoryDialog(manga: List<Manga>? = null) {
         viewModelScope.launch {
-            // Create a copy of selected manga
-            val mangaList = selectedManga
+            // Create a copy of selected manga; Tomo's shelf passes the long-pressed one instead
+            val mangaList = manga ?: selectedManga
 
             // Hide the default category because it has a different behavior than the ones from db.
             val categories = state.value.displayedCategories.filter { it.id != 0L }
