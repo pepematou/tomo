@@ -80,11 +80,49 @@ jobs:
             tomo-x86_64-${{ needs.get_tag.outputs.tag }}.apk
 
 
+  desktop:
+    if: github.repository == 'pepematou/tomo'
+    name: Build Tomo for Linux
+    runs-on: ubuntu-latest
+    needs: get_tag
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Build
+        run: |
+          set -e
+          tag=${{ needs.get_tag.outputs.tag }}
+          ./gradlew :desktop:packageDeb :desktop:createDistributable -PdesktopVersion=${tag#v}
+          mv desktop/build/compose/binaries/main/deb/*.deb tomo-desktop-linux-$tag.deb
+          tar -czf tomo-desktop-linux-$tag.tar.gz -C desktop/build/compose/binaries/main/app tomo
+
+      - name: Upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tomo-desktop
+          path: |
+            tomo-desktop-linux-${{ needs.get_tag.outputs.tag }}.deb
+            tomo-desktop-linux-${{ needs.get_tag.outputs.tag }}.tar.gz
+
+
   release:
     if: github.repository == 'pepematou/tomo'
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [get_tag, build]
+    needs: [get_tag, build, desktop]
     permissions:
       contents: write
       actions: write
@@ -101,6 +139,7 @@ jobs:
           failOnError: false
           name: |
             tomo
+            tomo-desktop
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
@@ -113,7 +152,11 @@ jobs:
             <!-->
 
             > Si no sabes cuál descargar, usa `tomo-${{ needs.get_tag.outputs.tag }}.apk`.
+            > Para la computadora (Linux): `tomo-desktop-linux-${{ needs.get_tag.outputs.tag }}.deb`, o el `.tar.gz` (descomprime y abre `tomo/bin/tomo`).
+          # The computer files go first: older Tomo for Android takes the last file without an ABI as its update
           files: |
+            tomo-desktop-linux-${{ needs.get_tag.outputs.tag }}.deb
+            tomo-desktop-linux-${{ needs.get_tag.outputs.tag }}.tar.gz
             tomo-${{ needs.get_tag.outputs.tag }}.apk
             tomo-arm64-v8a-${{ needs.get_tag.outputs.tag }}.apk
             tomo-armeabi-v7a-${{ needs.get_tag.outputs.tag }}.apk

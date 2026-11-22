@@ -114,3 +114,6 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `presentation/more/settings/screen/SettingsDataScreen.kt` | Grupo "Sincronizar entre aparatos" junto a los respaldos |
 | `ui/stats/StatsScreen.kt` | Con el tema Tomo muestra las estadísticas nuevas (`TomoStatsContent`) sobre los totales de Mihon |
 | `settings.gradle.kts`, `app/build.gradle.kts` | Módulo `:tomo-text` (modelos y lectores de fanfics sin Android) que comparten la app y Tomo para computadora |
+| `build.gradle.kts`, `settings.gradle.kts`, `gradle/libs.versions.toml` | Plugin de Compose Multiplatform y módulo `:desktop` (Tomo para computadora) |
+| `data/release/ReleaseServiceImpl.kt` | El aviso de actualización solo toma archivos `.apk`; la release también trae los de computadora |
+| `.github/workflows/release.yml` | Arma también el `.deb` y el `.tar.gz` de Linux |

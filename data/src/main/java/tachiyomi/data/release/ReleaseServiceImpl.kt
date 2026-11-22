@@ -47,7 +47,8 @@ class ReleaseServiceImpl(
     }
 
     private fun getDownloadLink(release: GithubRelease, isFoss: Boolean): String? {
-        val map = release.assets.associate { asset ->
+        // Tomo: the release also carries the computer's files, which are no update for the phone
+        val map = release.assets.filter { it.name.endsWith(".apk") }.associate { asset ->
             BUILD_TYPES.find { "-$it" in asset.name } to asset.downloadLink
         }
 
