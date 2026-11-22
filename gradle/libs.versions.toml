@@ -1,4 +1,5 @@
 [versions]
+compose-multiplatform = "1.12.2"
 aboutLibraries = "15.3.0"
 android-desugar = "2.1.5"
 android-gradle = "9.5.1"
@@ -149,6 +150,7 @@ kotlin-compose-compiler-gradle = { module = "org.jetbrains.kotlin:compose-compil
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin-gradle" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
@@ -202,6 +204,7 @@ xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core-android", version.ref
 xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
 
 [plugins]
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutLibraries" }
 android-application = { id = "com.android.application", version.ref = "android-gradle" }
 android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "android-gradle" }
