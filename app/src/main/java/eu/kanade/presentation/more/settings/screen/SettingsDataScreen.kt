@@ -51,6 +51,7 @@ import eu.kanade.tachiyomi.data.backup.create.BackupCreateWorker
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreWorker
 import eu.kanade.tachiyomi.data.export.LibraryExporter
 import eu.kanade.tachiyomi.data.export.LibraryExporter.ExportOptions
+import eu.kanade.tachiyomi.tomo.sync.tomoSyncGroup
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.workManager
@@ -103,6 +104,7 @@ object SettingsDataScreen : SearchableSettings {
             Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.pref_storage_location_info)),
 
             getBackupAndRestoreGroup(backupPreferences = backupPreferences),
+            tomoSyncGroup(),
             getDataGroup(),
             getExportGroup(),
         )

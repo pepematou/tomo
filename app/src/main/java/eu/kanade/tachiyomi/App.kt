@@ -144,6 +144,8 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         setupNotificationChannels()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        // Tomo: shares library and progress through the sync folder when the app opens and closes (RF-38)
+        graph.folderSync.attach()
 
         // Show notification to disable Incognito Mode when it's enabled
         basePreferences.incognitoMode.changes()

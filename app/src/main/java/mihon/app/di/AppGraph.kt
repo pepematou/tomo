@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstallActivity
 import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
+import eu.kanade.tachiyomi.tomo.sync.FolderSync
 import eu.kanade.tachiyomi.tomo.text.FanficDownloader
 import eu.kanade.tachiyomi.tomo.text.FollowFanfic
 import eu.kanade.tachiyomi.tomo.text.TextCache
@@ -112,6 +113,7 @@ interface AppGraph : ViewModelGraph {
     val followFanfic: FollowFanfic
     val fanficDownloader: FanficDownloader
     val textCache: TextCache
+    val folderSync: FolderSync
 
     val updateChecker: AppUpdateChecker
 

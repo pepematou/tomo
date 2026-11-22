@@ -109,3 +109,6 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `ui/library/LibraryTab.kt` | En tablet horizontal la ficha se abre a la derecha de la biblioteca (`TomoLibraryPanes`) |
 | `ui/reader/ReaderActivity.kt` | Espacio y Mayús+Espacio pasan página; Esc sale del lector (RF-22) |
 | `ui/reader/setting/ReaderPreferences.kt` | Doble página por defecto cuando la pantalla es más ancha que alta (RF-23) |
+| `App.kt` | Conecta `FolderSync` al abrir y cerrar la app (RF-38) |
+| `mihon/app/di/AppGraph.kt` | Expone `FolderSync` |
+| `presentation/more/settings/screen/SettingsDataScreen.kt` | Grupo "Sincronizar entre aparatos" junto a los respaldos |

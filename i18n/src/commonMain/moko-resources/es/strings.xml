@@ -1141,4 +1141,8 @@
     <string name="tomo_fanfic_no_mature">Sin contenido adulto</string>
     <string name="tomo_fanfic_series">Series</string>
     <string name="tomo_fanfic_series_selected">Serie: %1$s ✕</string>
+    <string name="tomo_sync_title">Sincronizar entre aparatos</string>
+    <string name="tomo_sync_folder">Carpeta de sincronización</string>
+    <string name="tomo_sync_stop">Dejar de sincronizar</string>
+    <string name="tomo_sync_info">Usa la misma carpeta en el celular y la tableta, sincronizada con Syncthing u otra app que sincronice carpetas del teléfono. Tomo deja ahí tu biblioteca al salir de la app y mezcla la de los otros aparatos al abrirla: los capítulos leídos y el progreso nunca retroceden. Quitar una serie en un aparato no la quita en los demás. La carpeta de la app de Google Drive no sirve.</string>
 </resources>

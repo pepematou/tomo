@@ -1343,4 +1343,8 @@
     <string name="tomo_fanfic_no_mature">No mature content</string>
     <string name="tomo_fanfic_series">Series</string>
     <string name="tomo_fanfic_series_selected">Series: %1$s ✕</string>
+    <string name="tomo_sync_title">Sync between devices</string>
+    <string name="tomo_sync_folder">Sync folder</string>
+    <string name="tomo_sync_stop">Stop syncing</string>
+    <string name="tomo_sync_info">Use the same folder on your phone and tablet, kept in sync by Syncthing or another app that syncs phone folders. Tomo leaves your library there when you leave the app and merges the other devices\' when you open it: read chapters and progress never go back. Removing a series on one device does not remove it on the others. The Google Drive app folder does not work.</string>
 </resources>
