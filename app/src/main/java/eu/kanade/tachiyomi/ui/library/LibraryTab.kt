@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.library
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.graphics.res.animatedVectorResource
@@ -13,11 +14,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
@@ -32,6 +37,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
+import eu.kanade.presentation.library.TomoLibraryPanes
 import eu.kanade.presentation.library.TomoLibrarySettingsSheet
 import eu.kanade.presentation.library.TomoShelfContent
 import eu.kanade.presentation.library.components.LibraryContent
@@ -42,6 +48,7 @@ import eu.kanade.presentation.more.onboarding.GETTING_STARTED_URL
 import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.presentation.tomo.tomoBackground
 import eu.kanade.presentation.util.Tab
+import eu.kanade.presentation.util.isTabletUi
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateWorker
 import eu.kanade.tachiyomi.data.library.sourceDownIds
@@ -127,158 +134,168 @@ data object LibraryTab : Tab {
             context.appGraph.libraryUpdateIssues.issues.map { it.sourceDownIds() }
         }.collectAsState(emptySet())
 
-        Scaffold(
-            modifier = if (glass) Modifier.tomoBackground() else Modifier,
-            containerColor = if (glass) Color.Transparent else MaterialTheme.colorScheme.background,
-            topBar = { scrollBehavior ->
-                if (glass && !state.selectionMode && state.searchQuery == null) {
-                    LibraryGlassHeader(
-                        count = state.libraryData.favorites.size,
-                        lastUpdated = lastUpdated,
+        val twoPane = isTabletUi() && LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        var paneMangaId by rememberSaveable { mutableStateOf<Long?>(null) }
+        val openManga: (Long) -> Unit = { if (twoPane) paneMangaId = it else navigator.push(MangaScreen(it)) }
+
+        TomoLibraryPanes(twoPane, paneMangaId, onClose = { paneMangaId = null }) {
+            Scaffold(
+                modifier = if (glass) Modifier.tomoBackground() else Modifier,
+                containerColor = if (glass) Color.Transparent else MaterialTheme.colorScheme.background,
+                topBar = { scrollBehavior ->
+                    if (glass && !state.selectionMode && state.searchQuery == null) {
+                        LibraryGlassHeader(
+                            count = state.libraryData.favorites.size,
+                            lastUpdated = lastUpdated,
+                            hasActiveFilters = state.hasActiveFilters,
+                            onClickSearch = { viewModel.search("") },
+                            onClickFilter = viewModel::showSettingsDialog,
+                            shelfView = shelfView,
+                            onShelfViewChange = libraryPreferences.tomoShelfView::set,
+                            type = typeFilter,
+                            onTypeChange = libraryPreferences.tomoTypeFilter::set,
+                        )
+                        return@Scaffold
+                    }
+                    val title = state.getToolbarTitle(
+                        defaultTitle = stringResource(MR.strings.label_library),
+                        defaultCategoryTitle = stringResource(MR.strings.label_default),
+                        page = state.coercedActiveCategoryIndex,
+                    )
+                    LibraryToolbar(
                         hasActiveFilters = state.hasActiveFilters,
-                        onClickSearch = { viewModel.search("") },
+                        selectedCount = state.selection.size,
+                        title = title,
+                        onClickUnselectAll = viewModel::clearSelection,
+                        onClickSelectAll = viewModel::selectAll,
+                        onClickInvertSelection = viewModel::invertSelection,
                         onClickFilter = viewModel::showSettingsDialog,
-                        shelfView = shelfView,
-                        onShelfViewChange = libraryPreferences.tomoShelfView::set,
-                        type = typeFilter,
-                        onTypeChange = libraryPreferences.tomoTypeFilter::set,
-                    )
-                    return@Scaffold
-                }
-                val title = state.getToolbarTitle(
-                    defaultTitle = stringResource(MR.strings.label_library),
-                    defaultCategoryTitle = stringResource(MR.strings.label_default),
-                    page = state.coercedActiveCategoryIndex,
-                )
-                LibraryToolbar(
-                    hasActiveFilters = state.hasActiveFilters,
-                    selectedCount = state.selection.size,
-                    title = title,
-                    onClickUnselectAll = viewModel::clearSelection,
-                    onClickSelectAll = viewModel::selectAll,
-                    onClickInvertSelection = viewModel::invertSelection,
-                    onClickFilter = viewModel::showSettingsDialog,
-                    onClickRefresh = { scope.launch { onClickRefresh(state.activeCategory) } },
-                    onClickGlobalUpdate = { scope.launch { onClickRefresh(null) } },
-                    onClickOpenRandomManga = {
-                        scope.launch {
-                            val randomItem = viewModel.getRandomLibraryItemForCurrentCategory()
-                            if (randomItem != null) {
-                                navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
-                            } else {
-                                snackbarHostState.showSnackbar(
-                                    context.stringResource(MR.strings.information_no_entries_found),
-                                )
-                            }
-                        }
-                    },
-                    searchQuery = state.searchQuery,
-                    onSearchQueryChange = viewModel::search,
-                    // For scroll overlay when no tab
-                    scrollBehavior = scrollBehavior.takeIf { !state.showCategoryTabs },
-                )
-            },
-            bottomBar = {
-                LibraryBottomActionMenu(
-                    visible = state.selectionMode,
-                    onChangeCategoryClicked = viewModel::openChangeCategoryDialog,
-                    onMarkAsReadClicked = { viewModel.markReadSelection(true) },
-                    onMarkAsUnreadClicked = { viewModel.markReadSelection(false) },
-                    onDownloadClicked = viewModel::performDownloadAction
-                        .takeIf { state.selectedManga.fastAll { !it.isLocal() } },
-                    onDeleteClicked = viewModel::openDeleteMangaDialog,
-                    onMigrateClicked = {
-                        val selection = state.selection
-                        viewModel.clearSelection()
-                        navigator.push(MigrationConfigScreen(selection))
-                    },
-                )
-            },
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        ) { contentPadding ->
-            when {
-                state.isLoading -> {
-                    LoadingScreen(Modifier.padding(contentPadding))
-                }
-                state.searchQuery.isNullOrEmpty() && !state.hasActiveFilters && state.isLibraryEmpty -> {
-                    val handler = LocalUriHandler.current
-                    EmptyScreen(
-                        stringRes = MR.strings.information_empty_library,
-                        modifier = Modifier.padding(contentPadding),
-                        actions = listOf(
-                            EmptyScreenAction(
-                                stringRes = MR.strings.getting_started_guide,
-                                icon = MaterialSymbols.AutoMirroredRounded.Help,
-                                onClick = { handler.openUri(GETTING_STARTED_URL) },
-                            ),
-                        ),
-                    )
-                }
-                glass && shelfView && !state.selectionMode && state.searchQuery.isNullOrEmpty() -> {
-                    TomoShelfContent(
-                        categories = state.displayedCategories,
-                        itemsFor = state::getItemsForCategory,
-                        sourceDownIds = sourceDownIds,
-                        contentPadding = contentPadding,
-                        onSeeAll = { index ->
-                            viewModel.updateActiveCategoryIndex(index)
-                            libraryPreferences.tomoShelfView.set(false)
-                        },
-                        onOpenManga = { navigator.push(MangaScreen(it)) },
-                        onContinueReading = { item ->
+                        onClickRefresh = { scope.launch { onClickRefresh(state.activeCategory) } },
+                        onClickGlobalUpdate = { scope.launch { onClickRefresh(null) } },
+                        onClickOpenRandomManga = {
                             scope.launch {
-                                val chapter = viewModel.getNextUnreadChapter(item.libraryManga.manga)
-                                if (chapter != null) {
-                                    context.startActivity(
-                                        ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
-                                    )
+                                val randomItem = viewModel.getRandomLibraryItemForCurrentCategory()
+                                if (randomItem != null) {
+                                    openManga(randomItem.libraryManga.manga.id)
                                 } else {
-                                    snackbarHostState.showSnackbar(context.stringResource(MR.strings.no_next_chapter))
+                                    snackbarHostState.showSnackbar(
+                                        context.stringResource(MR.strings.information_no_entries_found),
+                                    )
                                 }
                             }
                         },
-                        onCreateCategory = { navigator.push(CategoryScreen()) },
-                        onMove = { viewModel.openChangeCategoryDialog(listOf(it.libraryManga.manga)) },
-                    )
-                }
-                else -> {
-                    LibraryContent(
-                        categories = state.displayedCategories,
                         searchQuery = state.searchQuery,
-                        selection = state.selection,
-                        contentPadding = contentPadding,
-                        currentPage = state.coercedActiveCategoryIndex,
-                        hasActiveFilters = state.hasActiveFilters,
-                        showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
-                        onChangeCurrentPage = viewModel::updateActiveCategoryIndex,
-                        onClickManga = { navigator.push(MangaScreen(it)) },
-                        onContinueReadingClicked = { it: LibraryManga ->
-                            scope.launch {
-                                val chapter = viewModel.getNextUnreadChapter(it.manga)
-                                if (chapter != null) {
-                                    context.startActivity(
-                                        ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
-                                    )
-                                } else {
-                                    snackbarHostState.showSnackbar(context.stringResource(MR.strings.no_next_chapter))
-                                }
-                            }
-                            Unit
-                        }.takeIf { state.showMangaContinueButton },
-                        onToggleSelection = viewModel::toggleSelection,
-                        onToggleRangeSelection = { category, manga ->
-                            viewModel.toggleRangeSelection(category, manga)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        },
-                        onRefresh = { onClickRefresh(state.activeCategory) },
-                        onGlobalSearchClicked = {
-                            navigator.push(GlobalSearchScreen(viewModel.state.value.searchQuery ?: ""))
-                        },
-                        getItemCountForCategory = { state.getItemCountForCategory(it) },
-                        getDisplayMode = { viewModel.getDisplayMode() },
-                        getColumnsForOrientation = { viewModel.getColumnsForOrientation(it) },
-                        getItemsForCategory = { state.getItemsForCategory(it) },
+                        onSearchQueryChange = viewModel::search,
+                        // For scroll overlay when no tab
+                        scrollBehavior = scrollBehavior.takeIf { !state.showCategoryTabs },
                     )
+                },
+                bottomBar = {
+                    LibraryBottomActionMenu(
+                        visible = state.selectionMode,
+                        onChangeCategoryClicked = viewModel::openChangeCategoryDialog,
+                        onMarkAsReadClicked = { viewModel.markReadSelection(true) },
+                        onMarkAsUnreadClicked = { viewModel.markReadSelection(false) },
+                        onDownloadClicked = viewModel::performDownloadAction
+                            .takeIf { state.selectedManga.fastAll { !it.isLocal() } },
+                        onDeleteClicked = viewModel::openDeleteMangaDialog,
+                        onMigrateClicked = {
+                            val selection = state.selection
+                            viewModel.clearSelection()
+                            navigator.push(MigrationConfigScreen(selection))
+                        },
+                    )
+                },
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            ) { contentPadding ->
+                when {
+                    state.isLoading -> {
+                        LoadingScreen(Modifier.padding(contentPadding))
+                    }
+                    state.searchQuery.isNullOrEmpty() && !state.hasActiveFilters && state.isLibraryEmpty -> {
+                        val handler = LocalUriHandler.current
+                        EmptyScreen(
+                            stringRes = MR.strings.information_empty_library,
+                            modifier = Modifier.padding(contentPadding),
+                            actions = listOf(
+                                EmptyScreenAction(
+                                    stringRes = MR.strings.getting_started_guide,
+                                    icon = MaterialSymbols.AutoMirroredRounded.Help,
+                                    onClick = { handler.openUri(GETTING_STARTED_URL) },
+                                ),
+                            ),
+                        )
+                    }
+                    glass && shelfView && !state.selectionMode && state.searchQuery.isNullOrEmpty() -> {
+                        TomoShelfContent(
+                            categories = state.displayedCategories,
+                            itemsFor = state::getItemsForCategory,
+                            sourceDownIds = sourceDownIds,
+                            contentPadding = contentPadding,
+                            onSeeAll = { index ->
+                                viewModel.updateActiveCategoryIndex(index)
+                                libraryPreferences.tomoShelfView.set(false)
+                            },
+                            onOpenManga = openManga,
+                            onContinueReading = { item ->
+                                scope.launch {
+                                    val chapter = viewModel.getNextUnreadChapter(item.libraryManga.manga)
+                                    if (chapter != null) {
+                                        context.startActivity(
+                                            ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
+                                        )
+                                    } else {
+                                        snackbarHostState.showSnackbar(
+                                            context.stringResource(MR.strings.no_next_chapter),
+                                        )
+                                    }
+                                }
+                            },
+                            onCreateCategory = { navigator.push(CategoryScreen()) },
+                            onMove = { viewModel.openChangeCategoryDialog(listOf(it.libraryManga.manga)) },
+                        )
+                    }
+                    else -> {
+                        LibraryContent(
+                            categories = state.displayedCategories,
+                            searchQuery = state.searchQuery,
+                            selection = state.selection,
+                            contentPadding = contentPadding,
+                            currentPage = state.coercedActiveCategoryIndex,
+                            hasActiveFilters = state.hasActiveFilters,
+                            showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
+                            onChangeCurrentPage = viewModel::updateActiveCategoryIndex,
+                            onClickManga = openManga,
+                            onContinueReadingClicked = { it: LibraryManga ->
+                                scope.launch {
+                                    val chapter = viewModel.getNextUnreadChapter(it.manga)
+                                    if (chapter != null) {
+                                        context.startActivity(
+                                            ReaderActivity.newIntent(context, chapter.mangaId, chapter.id),
+                                        )
+                                    } else {
+                                        snackbarHostState.showSnackbar(
+                                            context.stringResource(MR.strings.no_next_chapter),
+                                        )
+                                    }
+                                }
+                                Unit
+                            }.takeIf { state.showMangaContinueButton },
+                            onToggleSelection = viewModel::toggleSelection,
+                            onToggleRangeSelection = { category, manga ->
+                                viewModel.toggleRangeSelection(category, manga)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            },
+                            onRefresh = { onClickRefresh(state.activeCategory) },
+                            onGlobalSearchClicked = {
+                                navigator.push(GlobalSearchScreen(viewModel.state.value.searchQuery ?: ""))
+                            },
+                            getItemCountForCategory = { state.getItemCountForCategory(it) },
+                            getDisplayMode = { viewModel.getDisplayMode() },
+                            getColumnsForOrientation = { viewModel.getColumnsForOrientation(it) },
+                            getItemsForCategory = { state.getItemsForCategory(it) },
+                        )
+                    }
                 }
             }
         }

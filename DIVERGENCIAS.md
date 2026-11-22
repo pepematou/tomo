@@ -106,3 +106,4 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | --- | --- |
 | `ui/library/LibraryViewModel.kt` | `openChangeCategoryDialog` acepta la serie mantenida presionada en el estante |
 | `ui/library/LibraryTab.kt` | Mantener presionado un lomo del estante abre "Mover a…" |
+| `ui/library/LibraryTab.kt` | En tablet horizontal la ficha se abre a la derecha de la biblioteca (`TomoLibraryPanes`) |
