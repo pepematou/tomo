@@ -113,3 +113,4 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `mihon/app/di/AppGraph.kt` | Expone `FolderSync` |
 | `presentation/more/settings/screen/SettingsDataScreen.kt` | Grupo "Sincronizar entre aparatos" junto a los respaldos |
 | `ui/stats/StatsScreen.kt` | Con el tema Tomo muestra las estadísticas nuevas (`TomoStatsContent`) sobre los totales de Mihon |
+| `settings.gradle.kts`, `app/build.gradle.kts` | Módulo `:tomo-text` (modelos y lectores de fanfics sin Android) que comparten la app y Tomo para computadora |

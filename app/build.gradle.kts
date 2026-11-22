@@ -214,6 +214,7 @@ dependencies {
     implementation(projects.coreMetadata)
     implementation(projects.sourceApi)
     implementation(projects.sourceLocal)
+    implementation(projects.tomoText)
     implementation(projects.data)
     implementation(projects.domain)
     implementation(projects.presentationCore)

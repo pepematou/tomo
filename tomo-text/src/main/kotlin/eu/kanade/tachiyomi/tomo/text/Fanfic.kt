@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.tomo.text
 
-import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -69,14 +68,3 @@ data class FanficSearch(
  */
 @Serializable
 data class Fandom(val name: String, val kind: String, val filter: String, val stories: String? = null)
-
-fun FanficWork.toSManga(): SManga = SManga.create().also {
-    it.url = url
-    it.title = title
-    it.author = author
-    it.description = summary
-    it.genre = tags.joinToString()
-    it.status = if (meta.complete) SManga.COMPLETED else SManga.ONGOING
-    it.memo = meta.toMemo()
-    it.initialized = true
-}
