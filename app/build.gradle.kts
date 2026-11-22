@@ -37,8 +37,8 @@ android {
     defaultConfig {
         applicationId = "app.tomo"
 
-        versionCode = 30
-        versionName = "0.25.0"
+        versionCode = 31
+        versionName = "0.25.1"
 
         buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
         buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
