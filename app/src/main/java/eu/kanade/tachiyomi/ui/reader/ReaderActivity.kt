@@ -49,6 +49,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -512,6 +513,12 @@ class ReaderActivity : BaseActivity() {
             }
             Key.DirectionDown, Key.PageDown -> Action.FORWARD
             Key.DirectionUp, Key.PageUp -> Action.BACKWARD
+            // Tomo: keyboard of a tablet or a computer (RF-22)
+            Key.Spacebar -> if (event.isShiftPressed) Action.BACKWARD else Action.FORWARD
+            Key.Escape -> {
+                if (isUp) finish()
+                return true
+            }
             Key.Menu -> Action.MENU
             Key.N -> {
                 if (isUp) loadNextChapter()

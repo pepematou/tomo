@@ -8,6 +8,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +50,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
@@ -211,13 +220,31 @@ fun TextReaderContent(
         textAlign = if (justify) TextAlign.Justify else TextAlign.Start,
     )
     val density = LocalDensity.current
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    var pageHeight by remember { mutableStateOf(0f) }
 
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(palette.background),
+            .background(palette.background)
+            .focusRequester(focus)
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                val key = textReaderKey(event.key, event.isShiftPressed) ?: return@onPreviewKeyEvent false
+                if (event.type == KeyEventType.KeyDown) {
+                    when (key) {
+                        TextReaderKey.PAGE_DOWN -> scope.launch { listState.animateScrollBy(pageHeight) }
+                        TextReaderKey.PAGE_UP -> scope.launch { listState.animateScrollBy(-pageHeight) }
+                        TextReaderKey.NEXT_CHAPTER -> onMove(1)
+                        TextReaderKey.PREVIOUS_CHAPTER -> onMove(-1)
+                        TextReaderKey.EXIT -> onBack()
+                    }
+                }
+                true
+            },
     ) {
-        val pageHeight = with(density) { (maxHeight * 0.88f).toPx() }
+        pageHeight = with(density) { (maxHeight * 0.88f).toPx() }
         LazyColumn(
             state = listState,
             contentPadding = PaddingValues(start = margin.dp, end = margin.dp, top = 104.dp, bottom = 220.dp),
@@ -749,4 +776,17 @@ private fun IndexRow(text: String, current: Boolean, onClick: () -> Unit) {
             .clickable(onClick = onClick)
             .padding(vertical = 12.dp),
     )
+}
+
+internal enum class TextReaderKey { PAGE_DOWN, PAGE_UP, NEXT_CHAPTER, PREVIOUS_CHAPTER, EXIT }
+
+/** Keyboard of a tablet or a computer (RF-22): arrows, page keys and space move the text, Esc leaves. */
+internal fun textReaderKey(key: Key, shift: Boolean): TextReaderKey? = when (key) {
+    Key.DirectionDown, Key.PageDown -> TextReaderKey.PAGE_DOWN
+    Key.DirectionUp, Key.PageUp -> TextReaderKey.PAGE_UP
+    Key.Spacebar -> if (shift) TextReaderKey.PAGE_UP else TextReaderKey.PAGE_DOWN
+    Key.DirectionRight -> TextReaderKey.NEXT_CHAPTER
+    Key.DirectionLeft -> TextReaderKey.PREVIOUS_CHAPTER
+    Key.Escape -> TextReaderKey.EXIT
+    else -> null
 }

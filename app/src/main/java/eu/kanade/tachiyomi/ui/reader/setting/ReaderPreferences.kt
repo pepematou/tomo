@@ -146,7 +146,8 @@ class ReaderPreferences(
 
     val dualPageView: Preference<DualPageView> = preferenceStore.getEnum(
         "pref_dual_page_view",
-        DualPageView.NEVER,
+        // Tomo: two pages whenever the screen is wider than tall, as on a tablet in landscape (RF-23)
+        DualPageView.WIDE,
     )
 
     // endregion
