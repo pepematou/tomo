@@ -101,6 +101,12 @@ jobs:
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
+      # The app's build script is read too, and it asks for the signing key in a release
+      - name: Decode signing keystore
+        run: echo "$SIGNING_KEY" | base64 -d > "${{ runner.temp }}/antsy.keystore"
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+
       - name: Build
         run: |
           set -e
@@ -108,6 +114,11 @@ jobs:
           ./gradlew :desktop:packageDeb :desktop:createDistributable -PdesktopVersion=${tag#v}
           mv desktop/build/compose/binaries/main/deb/*.deb tomo-desktop-linux-$tag.deb
           tar -czf tomo-desktop-linux-$tag.tar.gz -C desktop/build/compose/binaries/main/app tomo
+        env:
+          storeFile: ${{ runner.temp }}/antsy.keystore
+          storePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyAlias: ${{ secrets.ALIAS }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
