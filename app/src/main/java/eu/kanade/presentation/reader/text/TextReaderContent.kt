@@ -41,10 +41,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -60,6 +62,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
@@ -81,11 +84,13 @@ import eu.kanade.presentation.theme.Onest
 import eu.kanade.presentation.tomo.Tomo
 import eu.kanade.presentation.tomo.TomoSwitch
 import eu.kanade.presentation.util.formatChapterNumber
+import eu.kanade.tachiyomi.tomo.text.ReadAloud
 import eu.kanade.tachiyomi.tomo.text.TextBlock
 import eu.kanade.tachiyomi.tomo.text.TextReaderPreferences
 import eu.kanade.tachiyomi.tomo.text.TextReaderPreferences.Font
 import eu.kanade.tachiyomi.tomo.text.TextReaderPreferences.Spacing
 import eu.kanade.tachiyomi.tomo.text.TextReaderPreferences.Theme
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import mihon.icons.materialsymbols.MaterialSymbols
@@ -220,6 +225,32 @@ fun TextReaderContent(
         textAlign = if (justify) TextAlign.Justify else TextAlign.Start,
     )
     val density = LocalDensity.current
+    val context = LocalContext.current
+    val readAloud = remember { ReadAloud(context) }
+    DisposableEffect(readAloud) { onDispose { readAloud.release() } }
+    val speaking by readAloud.playing.collectAsState()
+    val reading by readAloud.current.collectAsState()
+    val missingVoice by readAloud.missingVoice.collectAsState()
+    val canGoNext by rememberUpdatedState(chapterIndex < chapters.lastIndex)
+    val move by rememberUpdatedState(onMove)
+    // The chapter header takes the first row when the text has no heading of its own
+    val headerRows = if (firstHeading == null) 1 else 0
+    LaunchedEffect(readAloud) {
+        readAloud.finished.collect {
+            if (canGoNext) {
+                readAloud.continueInNext = true
+                move(1)
+            }
+        }
+    }
+    LaunchedEffect(blocks) {
+        if (readAloud.continueInNext) {
+            readAloud.continueInNext = false
+            readAloud.play(blocks, 0)
+        }
+    }
+    LaunchedEffect(reading) { reading?.let { listState.animateScrollToItem(it + headerRows) } }
+    LaunchedEffect(missingVoice) { if (missingVoice) context.toast(MR.strings.tomo_text_tts_missing) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
     var pageHeight by remember { mutableStateOf(0f) }
@@ -279,7 +310,15 @@ fun TextReaderContent(
                     else -> {
                         val previous = blocks.getOrNull(index - 1)?.kind
                         val indent = block.kind == TextBlock.Kind.PARAGRAPH && previous == TextBlock.Kind.PARAGRAPH
-                        Block(block, textStyle, palette, indent)
+                        Box(
+                            if (index == reading) {
+                                Modifier.background(palette.chip, RoundedCornerShape(8.dp))
+                            } else {
+                                Modifier
+                            },
+                        ) {
+                            Block(block, textStyle, palette, indent)
+                        }
                     }
                 }
             }
@@ -351,6 +390,17 @@ fun TextReaderContent(
                     }
                     PanelButton(stringResource(MR.strings.tomo_text_contents), palette) { showIndex = true }
                     PanelButton("Aa", palette, selected = showStyle, serif = true) { showStyle = !showStyle }
+                    PanelButton(
+                        stringResource(if (speaking) MR.strings.tomo_text_pause else MR.strings.tomo_text_listen),
+                        palette,
+                        selected = speaking,
+                    ) {
+                        if (speaking) {
+                            readAloud.pause()
+                        } else {
+                            readAloud.play(blocks, (listState.firstVisibleItemIndex - headerRows).coerceAtLeast(0))
+                        }
+                    }
                     PanelButton(
                         stringResource(MR.strings.tomo_text_next),
                         palette,

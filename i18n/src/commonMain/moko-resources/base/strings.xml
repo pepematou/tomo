@@ -1357,4 +1357,7 @@
     <string name="tomo_stats_genres">Genres</string>
     <string name="tomo_stats_sources">Sources</string>
     <string name="tomo_stats_totals">Totals</string>
+    <string name="tomo_text_listen">Listen</string>
+    <string name="tomo_text_pause">Pause</string>
+    <string name="tomo_text_tts_missing">No Spanish voice installed. Add one in Android settings → Text-to-speech output.</string>
 </resources>

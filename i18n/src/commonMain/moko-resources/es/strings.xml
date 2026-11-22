@@ -1155,4 +1155,7 @@
     <string name="tomo_stats_genres">Géneros</string>
     <string name="tomo_stats_sources">Fuentes</string>
     <string name="tomo_stats_totals">Totales</string>
+    <string name="tomo_text_listen">Escuchar</string>
+    <string name="tomo_text_pause">Pausa</string>
+    <string name="tomo_text_tts_missing">No hay voz en español. Agrégala en Ajustes de Android → Salida de texto a voz.</string>
 </resources>
