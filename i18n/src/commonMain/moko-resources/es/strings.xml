@@ -1145,4 +1145,14 @@
     <string name="tomo_sync_folder">Carpeta de sincronización</string>
     <string name="tomo_sync_stop">Dejar de sincronizar</string>
     <string name="tomo_sync_info">Usa la misma carpeta en el celular y la tableta, sincronizada con Syncthing u otra app que sincronice carpetas del teléfono. Tomo deja ahí tu biblioteca al salir de la app y mezcla la de los otros aparatos al abrirla: los capítulos leídos y el progreso nunca retroceden. Quitar una serie en un aparato no la quita en los demás. La carpeta de la app de Google Drive no sirve.</string>
+    <string name="tomo_stats_this_week">Esta semana</string>
+    <string name="tomo_stats_weeks">Últimas 8 semanas</string>
+    <string name="tomo_stats_empty">Lee un rato y aquí aparecerá tu semana.</string>
+    <string name="tomo_stats_top_series">Series más leídas</string>
+    <string name="tomo_stats_types">Manga y fanfics</string>
+    <string name="tomo_stats_fanfics">Fanfics</string>
+    <string name="tomo_stats_words">%1$s palabras</string>
+    <string name="tomo_stats_genres">Géneros</string>
+    <string name="tomo_stats_sources">Fuentes</string>
+    <string name="tomo_stats_totals">Totales</string>
 </resources>

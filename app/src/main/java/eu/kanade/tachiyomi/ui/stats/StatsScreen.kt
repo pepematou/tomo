@@ -9,7 +9,10 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.more.stats.StatsScreenContent
 import eu.kanade.presentation.more.stats.StatsScreenState
+import eu.kanade.presentation.tomo.LocalGlassTheme
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.tomo.stats.TomoStatsContent
+import eu.kanade.tachiyomi.tomo.stats.TomoStatsViewModel
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
@@ -23,6 +26,13 @@ class StatsScreen : Screen() {
 
         val viewModel = metroViewModel<StatsViewModel>()
         val state by viewModel.state.collectAsState()
+
+        // Tomo: the glass statistics, with the new sections over Mihon's totals (phase 5)
+        if (LocalGlassTheme.current) {
+            val tomoStats by metroViewModel<TomoStatsViewModel>().stats.collectAsState()
+            TomoStatsContent(tomoStats, state as? StatsScreenState.Success, navigator::pop)
+            return
+        }
 
         Scaffold(
             topBar = { scrollBehavior ->

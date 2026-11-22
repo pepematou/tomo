@@ -154,4 +154,12 @@
         <item quantity="one">%d unread chapter</item>
         <item quantity="other">%d unread chapters</item>
     </plurals>
+    <plurals name="tomo_stats_streak">
+        <item quantity="one">%1$d day in a row</item>
+        <item quantity="other">%1$d days in a row</item>
+    </plurals>
+    <plurals name="tomo_stats_chapters">
+        <item quantity="one">%1$d chapter</item>
+        <item quantity="other">%1$d chapters</item>
+    </plurals>
 </resources>

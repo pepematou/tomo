@@ -155,4 +155,12 @@
         <item quantity="one">%d capítulo sin leer</item>
         <item quantity="other">%d capítulos sin leer</item>
     </plurals>
+    <plurals name="tomo_stats_streak">
+        <item quantity="one">%1$d día seguido</item>
+        <item quantity="other">%1$d días seguidos</item>
+    </plurals>
+    <plurals name="tomo_stats_chapters">
+        <item quantity="one">%1$d capítulo</item>
+        <item quantity="other">%1$d capítulos</item>
+    </plurals>
 </resources>

@@ -112,3 +112,4 @@ Generar la lista actual: `git diff --name-status upstream/main...HEAD | grep -v 
 | `App.kt` | Conecta `FolderSync` al abrir y cerrar la app (RF-38) |
 | `mihon/app/di/AppGraph.kt` | Expone `FolderSync` |
 | `presentation/more/settings/screen/SettingsDataScreen.kt` | Grupo "Sincronizar entre aparatos" junto a los respaldos |
+| `ui/stats/StatsScreen.kt` | Con el tema Tomo muestra las estadísticas nuevas (`TomoStatsContent`) sobre los totales de Mihon |
