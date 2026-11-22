@@ -46,6 +46,8 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.LocalSource
 import tachiyomi.source.local.io.Format
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -79,6 +81,7 @@ class TextReaderViewModel(
     private var saveJob: Job? = null
     private var currentChapterId = chapterId
     private var lastSaved = -1
+    private var lastSavedAt = Clock.System.now()
 
     init {
         open(chapterId)
@@ -116,6 +119,7 @@ class TextReaderViewModel(
         }
         chapterLengths.put(chapter.id, blocks.size)
         lastSaved = chapter.lastPageRead.toInt()
+        lastSavedAt = Clock.System.now()
         State.Ready(
             title = manga.title,
             chapter = chapter,
@@ -188,7 +192,11 @@ class TextReaderViewModel(
                 if (atEnd) read = true
             },
         )
-        upsertHistory.await(HistoryUpdate(chapterId, Clock.System.now(), sessionReadDuration = 0))
+        val now = Clock.System.now()
+        // Time since the last move; a long gap is the reader left open, not reading, so it counts at most 10 minutes
+        val read = (now - lastSavedAt).coerceIn(Duration.ZERO, 10.minutes)
+        lastSavedAt = now
+        upsertHistory.await(HistoryUpdate(chapterId, now, sessionReadDuration = read.inWholeMilliseconds))
     }
 
     sealed interface State {
